@@ -3,3 +3,4 @@ seaborn
 fastapi
 pydantic
 uvicorn
+python-dotenv
