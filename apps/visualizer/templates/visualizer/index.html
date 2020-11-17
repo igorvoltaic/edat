@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %} Edat {% endblock %}</title>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+        <script src="https://unpkg.com/vue"></script>
+        <script src="https://unpkg.com/vue-router"></script>
+        <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/semantic/dist/semantic.min.css' %}">
+        <script
+            src="https://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+            crossorigin="anonymous"></script>
+        <script src="{% static 'visualizer/css/semantic/dist/semantic.min.js' %}"></script>
+        <link href="{% static 'visualizer/css/style.css' %}" rel="stylesheet">
+    </head>
+    <body>
+        <div id="app">
+            <navbar></navbar>
+            <transition name="fade" mode="out-in">
+                <router-view :key="$route.fullPath"></router-view>
+            </transition>
+        </div>
+
+        {# Django variables section #}
+        {% block _variables %}{% endblock %}
+        {% include "visualizer/_variables.html" %}
+
+        {# Vue routes section #}
+        {% block _routes %}{% endblock %}
+        {% include "visualizer/_routes.html" %}
+
+        <script src="{% static 'visualizer/app.js' %}"></script>
+
+        {# Load only needed Vue components based on auth #}
+        {% if not user.is_authenticated %}
+            {% block login %}{% endblock %}
+            {% include "visualizer/vue-login.html" %}
+            {% block register %}{% endblock %}
+            {% include "visualizer/vue-register.html" %}
+        {% endif %}
+
+        {% block home %}{% endblock %}
+        {% include "visualizer/vue-dataset-list.html" %}
+
+        {% block navigation %}{% endblock %}
+        {% include "visualizer/vue-navigation.html" %}
+
+    </body>
+</html>

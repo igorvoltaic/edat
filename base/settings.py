@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'analizer',
+    'apps.visualizer',
     'apps.datasets',
 ]
 
@@ -73,7 +73,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "analizer.User"
+AUTH_USER_MODEL = "visualizer.User"
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -103,6 +103,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/django/static/'
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+)
+
+STATIC_URL = '/static/'
 
 PROJECT_NAME = "edat"

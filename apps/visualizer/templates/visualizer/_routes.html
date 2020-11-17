@@ -1,0 +1,26 @@
+{% load static %}
+
+{% block _routes %}
+
+{# Variables used in Vue components #}
+
+<script type='text/javascript'> 
+    {% if user.is_authenticated %}
+
+    const navLinks = [
+            { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js")},
+            { name: 'logout', meta: 'Log Out', path: "{% url 'logout' %}", component: {created: function () {window.location.replace('/logout')}} },
+    ]
+
+    {% else %}
+
+    const navLinks = [
+            { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js") },
+            { name: 'login', meta: 'Log In', path: "{% url 'login' %}", component: () => import(staticFiles + "vue/login.js") },
+            { name: 'register', meta: 'Register', path: "{% url 'register' %}", component: () => import(staticFiles + "vue/register.js") },
+    ]
+
+    {% endif %}
+</script>
+
+{% endblock %}

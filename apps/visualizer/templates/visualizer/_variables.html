@@ -1,0 +1,23 @@
+{% load static %}
+
+{% block _variables %}
+
+{# Variables used in Vue components #}
+
+<script type='text/javascript'> 
+    const staticFiles = '{% static "visualizer/" %}'
+    const csrf_token = "{{ csrf_token }}"
+
+    {% if user.is_authenticated %}
+    const currentUser = { name : "{{ user.username }}", id: {{ user.id }} }
+    const auth = true
+
+    {% else %}
+    const currentUser = { name : "", id: "" }
+    const auth = false
+
+    {% endif %}
+
+</script>
+
+{% endblock %}

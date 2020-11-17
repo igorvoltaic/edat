@@ -1,0 +1,29 @@
+{% load static %}
+
+{% block login %}
+
+
+{# Vue templates #}
+
+<script type="text/x-template" id="login-template">
+    <section class="ui raised very padded text container segment teal">
+            <h2 class="ui header">Login</h2>
+            {% if message %}
+                <div>{{ message }}</div>
+            {% endif %}
+
+            <form class="ui form segment " action="{% url 'login' %}" method="post">
+                {% csrf_token %}
+                <div class="input field">
+                    <input autofocus type="text" name="username" placeholder="Username">
+                </div>
+                <div class="input field">
+                    <input  type="password" name="password" placeholder="Password">
+                </div>
+                <button class="ui button teal" type="submit" value="Login">Login</button>
+            </form>
+            <p>Don&#39;t have an account? <router-link :to="{ name: 'register' }">Register here</router-link>.</p>
+    </section>
+</script>
+
+{% endblock %}

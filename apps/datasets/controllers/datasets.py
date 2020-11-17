@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from apps.datasets.services import get_all_datasets, get_dataset
 from apps.datasets.dtos import DatasetDTO
@@ -17,6 +17,8 @@ def read_all():
 @api_router.get("/datasets/{dataset_id}", response_model=DatasetDTO)
 def read(dataset_id: int):
     dataset = get_dataset(dataset_id)
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
     return dataset
 
 

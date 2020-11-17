@@ -1,0 +1,62 @@
+div#site-header.item {
+  padding-right: 0 !important;
+}
+
+div#site-subheader.item {
+  padding-left: 0 !important;
+}
+
+div#home-container form.ui.form {
+  padding-top: 4em;
+  display: flex;
+  justify-content: center;
+}
+div#home-container div#dataset-table {
+  width: 80%;
+}
+div#home-container div#dataset-table form#search-form {
+  display: flex;
+  justify-content: left;
+}
+div#home-container div#dataset-table button {
+  padding: 7px 15px !important;
+}
+div#home-container div#dataset-table table {
+  border: 1px solid #444;
+}
+div#home-container div#dataset-table table thead tr th {
+  color: lightgray;
+  background-color: #444;
+  border-radius: 0;
+  border: 0;
+}
+div#home-container div#dataset-table table thead tr th:last-child {
+  width: 12em;
+}
+div#home-container div.field {
+  display: flex;
+  align-items: center;
+}
+div#home-container div.field input#upload-csv-file {
+  display: none;
+}
+div#home-container div.field label#upload-csv-file-label {
+  display: inline-block;
+  color: #444;
+  font-weight: bold;
+  margin-left: 1em;
+  font-size: 1rem;
+  margin-right: 1em;
+  margin-left: 1em;
+  margin-bottom: 0;
+}
+div#home-container div.field div#pre-label-text {
+  display: inline-block;
+  color: #444;
+  font-weight: bold;
+  min-height: 1em;
+  font-size: 1rem;
+  margin-right: 1em;
+}
+
+/*# sourceMappingURL=style.css.map */

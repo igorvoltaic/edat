@@ -1,0 +1,37 @@
+{% load static %}
+
+{% block register %}
+
+
+{# Vue templates #}
+<script type="text/x-template" id="register-template">
+    <section class="ui raised very padded text container segment teal">
+            <h2 class="ui header">Register</h2>
+
+            {% if message %}
+                <div>{{ message }}</div>
+            {% endif %}
+
+            <form class="ui form segment" action="{% url 'register' %}" method="post">
+                {% csrf_token %}
+                <div class="input field">
+                    <input autofocus type="text" name="username" placeholder="Username">
+                </div>
+                <div class="input field">
+                    <input type="email" name="email" placeholder="Email Address">
+                </div>
+                <div class="input field">
+                    <input type="password" name="password" placeholder="Password">
+                </div>
+                <div class="input field">
+                    <input type="password" name="confirmation" placeholder="Confirm Password">
+                </div>
+                <button class="ui button teal" type="submit" value="Register">Login</button>
+                <p>
+                    Already have an account? <router-link :to="{ name: 'login' }">Log In here.</router-link>
+                </p>
+            </form>
+    </section>
+</script>
+
+{% endblock %}

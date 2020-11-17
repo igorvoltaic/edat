@@ -8,7 +8,7 @@ from .models import User
 
 
 def index(request):
-    return render(request, "analizer/index.html")
+    return render(request, "visualizer/index.html")
 
 
 def login_view(request):
@@ -24,11 +24,11 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
         else:
-            return render(request, "analizer/login.html", {
-                "message": "Invalid username and/or password."
-            })
+            return HttpResponseRedirect("/#/login")  # redirect to vue route
+            # TODO: login failed message. something like redirect
+            # to '/#/login/failed' with additional prop to show the message
     else:
-        return render(request, "analizer/login.html")
+        return render(request, "visualizer/login.html")
 
 
 def logout_view(request):
@@ -45,7 +45,7 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "analizer/register.html", {
+            return render(request, "visualizer/register.html", {
                 "message": "Passwords must match."
             })
 
@@ -54,10 +54,11 @@ def register(request):
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return render(request, "analizer/register.html", {
-                "message": "Username already taken."
-            })
+            return HttpResponseRedirect("/#/register")  # redirect to vue route
+            # TODO: login failed message. something like redirect to
+            # '/#/register/failed' with additional prop to
+            # show the message "Username already taken."
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "analizer/register.html")
+        return render(request, "visualizer/register.html")

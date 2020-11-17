@@ -1,22 +1,21 @@
+from typing import List, Optional
+
 from apps.datasets.dtos import DatasetDTO
 from apps.datasets.models import Dataset
-from typing import List
 
 
 def save_dataset(dataset_info: DatasetDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
-    dataset = Dataset.objects.create(
-        name=dataset_info.name,
-        height=dataset_info.height,
-        width=dataset_info.width,
-        comment=dataset_info.comment
-    )
+    dataset = Dataset.objects.create(**dataset_info.dict())
     return DatasetDTO.from_orm(dataset)
 
 
-def get_dataset(dataset_id: int) -> DatasetDTO:
+def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     """ Get selected dataset from the DB model """
-    dataset = Dataset.objects.get(pk=dataset_id)
+    try:
+        dataset = Dataset.objects.get(pk=dataset_id)
+    except Dataset.DoesNotExist:
+        return None
     return DatasetDTO.from_orm(dataset)
 
 

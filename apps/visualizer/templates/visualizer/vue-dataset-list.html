@@ -1,0 +1,72 @@
+{% load static %}
+
+{% block navigation %}
+
+
+{# Vue templates #}
+
+<script type="text/x-template" id="dataset-list-template">
+    <div id="home-container" class="ui container">
+        <form class="ui form" action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="field">
+                <div class="pre-label-text">Select existing data dataset of upload new:</div>
+                <label for="upload-csv-file" id="upload-csv-file-label" class="ui button white">Choose file...</label>
+                <input type="file" name="file" id="upload-csv-file" required="">
+                <button class="ui button white" type="submit">Submit</button>
+            </div>
+        </form>
+		<div id="dataset-table" class="ui container">
+			<form id="search-form" class="ui form" onsubmit="fetchItems(); return false;">
+				<div class="field">
+					<div class="ui labeled input">
+						<div class="ui label">
+							Search
+						</div>
+						<input id="search" type="text" name="q" value="" placeholder="Input">
+					</div>
+				</div>
+			</form>
+			<table class="ui celled striped table">
+				<thead>
+					<tr>
+						<th class="center aligned">Name</th>
+						<th class="center aligned">Imported</th>
+						<th class="center aligned">Size</th>
+						<th class="center aligned">Comment</th>
+						<th class="center aligned">Action</th>
+					</tr>
+				</thead>
+			    <tbody>
+					<dataset-list-item 
+						v-for="dataset in datasets" 
+						:dataset="dataset"
+						:key="dataset.id">
+					</dataset-list-item>
+			  </tbody>
+			</table>
+		</div>
+
+    </div>
+</script>
+
+<script type="text/x-template" id="dataset-list-item-template">
+     "id": 0,
+    "name": "string",
+    "timestamp": "2020-11-17T11:25:56.002Z",
+    "height": 0,
+    "width": 0,
+    "comment": ""
+	<tr>
+		<td>[[ dataset.name ]]</td>
+		<td class="right aligned">[[ dataset.timestamp ]]</td>
+		<td>[[ dataset.height ]]x[[dataset.width]]</td>
+		<td>[[ dataset.comment ]]</td>
+		<td>
+			<button class="ui button red">Delete</button>
+			<button class="ui button green">Edit</button>
+		</td>
+	</tr>
+</script>
+
+{% endblock %}
