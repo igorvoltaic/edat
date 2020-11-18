@@ -1,8 +1,8 @@
 from typing import List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, File, UploadFile
 
-from apps.datasets.services import get_all_datasets, get_dataset
-from apps.datasets.dtos import DatasetDTO
+from apps.datasets.services import get_all_datasets, get_dataset, read_csv  # ,save_dataset
+from apps.datasets.dtos import DatasetDTO, FileDTO
 
 
 api_router = APIRouter()
@@ -22,7 +22,12 @@ def read(dataset_id: int):
     return dataset
 
 
-# @api_router.post("/items", response_model=schemas.Item)
-# def create_item(item: schemas.ItemCreate):
-#     item = models.Item.objects.create(**item.dict())
-#     return item
+@api_router.post("/datasets", response_model=FileDTO)
+async def create_item(file: UploadFile = File(...)):
+    if not file.filename.split('.')[-1] == "csv" \
+            and not file.content_type == "text/csv":
+        raise HTTPException(status_code=422, detail="Unprocessable file type")
+    file_info = read_csv(file.filename, file.file)
+    # dataset_info = DatasetDTO(name=uploaded_file.filename, )
+    # dataset = save_dataset(dataset_info)
+    return file_info

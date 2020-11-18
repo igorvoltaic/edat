@@ -7,7 +7,7 @@
 
 <script type="text/x-template" id="dataset-list-template">
     <div id="home-container" class="ui container">
-        <form class="ui form" action="" method="post" enctype="multipart/form-data">
+        <form class="ui form" action="/api/datasets" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="field">
                 <div class="pre-label-text">Select existing data dataset of upload new:</div>
@@ -51,12 +51,6 @@
 </script>
 
 <script type="text/x-template" id="dataset-list-item-template">
-     "id": 0,
-    "name": "string",
-    "timestamp": "2020-11-17T11:25:56.002Z",
-    "height": 0,
-    "width": 0,
-    "comment": ""
 	<tr>
 		<td>[[ dataset.name ]]</td>
 		<td class="right aligned">[[ dataset.timestamp ]]</td>
