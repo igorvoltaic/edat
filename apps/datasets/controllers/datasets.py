@@ -2,8 +2,9 @@ from typing import List
 from fastapi import APIRouter, HTTPException, File, UploadFile
 
 from apps.datasets.services import get_all_datasets, get_dataset, \
-                                   read_csv, handle_uploaded_file  # ,save_dataset
-from apps.datasets.dtos import DatasetDTO, FileDTO
+                                   read_csv, handle_uploaded_file, \
+                                   save_dataset, delete_dataset
+from apps.datasets.dtos import DatasetDTO
 
 
 api_router = APIRouter()
@@ -24,14 +25,21 @@ def read(dataset_id: int):
 
 
 @api_router.post("/datasets")
-# @api_router.post("/datasets", response_model=FileDTO)
+# @api_router.post("/datasets", response_model=DatasetDTO)
 def create_item(file: UploadFile = File(...)):
     if not file.filename.split('.')[-1] == "csv" \
             and not file.content_type == "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
-    file_path = handle_uploaded_file(file.file.read())
-    file_info = read_csv(file.filename, file_path)
-    # dataset_info = DatasetDTO(name=uploaded_file.filename, )
-    # dataset = save_dataset(dataset_info)
+    file_uuid = handle_uploaded_file(file.file)
+    dataset_info = read_csv(file.filename, file_uuid)
+    dataset = save_dataset(dataset_info)
     # return file_info
-    return file_info
+    return dataset
+
+
+@api_router.delete("/datasets/{dataset_id}", response_model=List[DatasetDTO])
+def delete_item(dataset_id: int):
+    datasets = delete_dataset(dataset_id)
+    if not datasets:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    return datasets

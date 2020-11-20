@@ -1,12 +1,12 @@
-# import pandas as pd
 import os
 import csv
 import datetime
-from io import StringIO
 from typing import List, Optional
+from uuid import uuid4
 from dateutil.parser import parse as dateparse
 from django.conf import settings
-from uuid import uuid4
+from django.core.files import File
+from django.core.files.base import ContentFile
 
 from apps.datasets.dtos import DatasetDTO, FileDTO, ColumnType
 from apps.datasets.models import Dataset, DatasetFile
@@ -27,51 +27,49 @@ def get_all_datasets() -> List[DatasetDTO]:
     return [DatasetDTO.from_orm(d) for d in datasets]
 
 
-def uniq_filename(path: str, file_path: str) -> str:
+def uniq_filename(file_uuid: str):
     """ Check if uuid filename is uniq """
-    if not os.path.isfile(file_path):
-        return f"{file_path}.csv"
-    uniq_filename(path, str(uuid4()))
-
-
-def handle_uploaded_file(f: bytes) -> str:
-    """ Check if filename is unique and save uploaded file """
     path = os.path.join(os.path.abspath(settings.MEDIA_ROOT),
                         "apps/datasets/uploads/")
-    file_path = uniq_filename(path, os.path.join(path, str(uuid4())))
-    with open(file_path, 'wb+') as destination:
-        destination.write(f)
-    return file_path
+    file_path = os.path.join(path, f"{file_uuid}.csv")
+    if not os.path.isfile(file_path):
+        return file_uuid
+    uniq_filename(str(uuid4()))
 
 
-def save_file(csvfile) -> int:
-    dataset_file = DatasetFile(upload=csvfile)
-    dataset_file.save()
-    return dataset_file.id
+def handle_uploaded_file(f):
+    """ Check if filename is unique and save uploaded file """
+    file = File(f).file.read()
+    file_uuid = uniq_filename(str(uuid4()))
+    uploaded_file = DatasetFile(id=file_uuid)
+    uploaded_file.upload.save(f"{file_uuid}.csv", ContentFile(file))
+    return uploaded_file.id
 
 
-def read_csv(filename, file_path) -> FileDTO:
+def read_csv(filename, file_uuid) -> FileDTO:
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
+    file = DatasetFile.objects.get(pk=file_uuid)
+    file_obj = File(file.upload).file.read().decode('utf-8')
     sniffer = csv.Sniffer()
-    f = open(file_path).read()
-    dialect = sniffer.sniff(f)
-    has_header = sniffer.has_header(f)
-    reader = csv.DictReader(f.split('\n'), dialect=dialect)
+    dialect = sniffer.sniff(file_obj)
+    has_header = sniffer.has_header(file_obj)
+    reader = csv.DictReader(file_obj.split('\n'), dialect=dialect)
     fieldnames = reader.fieldnames
     if has_header:
         # remove header line
-        line_num = sum(1 for line in f.strip().split('\n')) - 1
+        line_num = sum(1 for line in file_obj.strip().split('\n')) - 1
     else:
         # if there is not header
-        line_num = sum(1 for line in f.strip().split('\n'))
-    file_info = FileDTO(name=filename,
+        line_num = sum(1 for line in file_obj.strip().split('\n'))
+    file_info = FileDTO(name=filename[:46] + filename[-4:],
                         column_names=fieldnames,
                         column_types=[ColumnType(check_type(v))
                                       for v in next(reader).values()],
-                        line_num=line_num,
-                        column_num=len(tuple(fieldnames)))
+                        height=line_num,
+                        width=len(tuple(fieldnames)),
+                        file_id=file_uuid)
     return file_info
 
 
@@ -104,3 +102,12 @@ def check_type(str_value):
     except ValueError:
         pass
     return "string"
+
+
+def delete_dataset(dataset_id: int) -> Optional[List[DatasetDTO]]:
+    """ Delete selected dataset """
+    try:
+        Dataset.objects.get(pk=dataset_id)
+    except Dataset.DoesNotExist:
+        return None
+    return get_all_datasets()

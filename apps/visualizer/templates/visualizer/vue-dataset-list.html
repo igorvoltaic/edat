@@ -40,13 +40,12 @@
 			    <tbody>
 					<dataset-list-item 
 						v-for="dataset in datasets" 
-						:dataset="dataset"
+                        :dataset="dataset"
 						:key="dataset.id">
 					</dataset-list-item>
 			  </tbody>
 			</table>
 		</div>
-
     </div>
 </script>
 
@@ -57,8 +56,8 @@
 		<td>[[ dataset.height ]]x[[dataset.width]]</td>
 		<td>[[ dataset.comment ]]</td>
 		<td>
-			<button class="ui button red">Delete</button>
-			<button class="ui button green">Edit</button>
+			<button @click="deleteDataset();" class="ui button red">Delete</button>
+			<button @click="showId();" class="ui button green">Edit</button>
 		</td>
 	</tr>
 </script>

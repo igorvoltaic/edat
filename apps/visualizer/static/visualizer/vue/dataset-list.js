@@ -1,7 +1,7 @@
 export default {
     template: '#dataset-list-template',
     components: {
-        'dataset-list-item': () => import(staticFiles + "vue/dataset-list-item.js")
+        'dataset-list-item': () => import(staticFiles + "vue/dataset-list-item.js"),
     },
    data() {
         return {
@@ -20,10 +20,8 @@ export default {
 			fetch(`/api/datasets?page=${p}`)
 			.then(response => response.json())
 			.then(result => {
-				this.datasets = result.datasets;
-				// this.hasNext = result.has_next;
-				// this.hasPrev = result.has_prev;
-			})
+				this.datasets = result; // add pagination
+			});
         },
         showFilename: function () {
             const fileInput = document.querySelector('#upload-csv-file')

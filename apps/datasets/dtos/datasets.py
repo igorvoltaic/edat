@@ -1,7 +1,7 @@
 from enum import Enum
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, UUID4
 
 
 class DatasetDTO(BaseModel):
@@ -28,5 +28,6 @@ class FileDTO(BaseModel):
     name: str
     column_names: List[str] = ...
     column_types: List[ColumnType]
-    line_num: int
-    column_num: int
+    width: int
+    height: int
+    file_id: UUID4
