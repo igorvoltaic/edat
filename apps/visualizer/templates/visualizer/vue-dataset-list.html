@@ -12,7 +12,7 @@
             <div class="field">
                 <div class="pre-label-text">Select existing data dataset of upload new:</div>
                 <label for="upload-csv-file" id="upload-csv-file-label" class="ui button white">Choose file...</label>
-                <input type="file" name="file" id="upload-csv-file" required="">
+                <input type="file" name="file" id="upload-csv-file" @change="showFilename" required="">
                 <button class="ui button white" type="submit">Submit</button>
             </div>
         </form>

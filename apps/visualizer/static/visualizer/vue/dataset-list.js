@@ -24,6 +24,10 @@ export default {
 				// this.hasNext = result.has_next;
 				// this.hasPrev = result.has_prev;
 			})
-        }
+        },
+        showFilename: function () {
+            const fileInput = document.querySelector('#upload-csv-file')
+            document.querySelector("#upload-csv-file-label").innerHTML = fileInput.files[0].name
+        },
     }
 }

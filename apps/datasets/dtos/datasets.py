@@ -1,6 +1,7 @@
+from enum import Enum
 from datetime import datetime
-from pydantic import BaseModel
 from typing import Optional, List
+from pydantic import BaseModel
 
 
 class DatasetDTO(BaseModel):
@@ -15,14 +16,17 @@ class DatasetDTO(BaseModel):
         orm_mode = True
 
 
+class ColumnType(str, Enum):
+    INT = "number"
+    FLOAT = "float"
+    DATETIME = "datetime"
+    BOOLEAN = "boolean"
+    STRING = "string"
+
+
 class FileDTO(BaseModel):
-    # id: Optional[int] = ...
     name: str
     column_names: List[str] = ...
     column_types: List[ColumnType]
     line_num: int
     column_num: int
-
-class ColumnType(str, Enum):
-    INT = "number"
-    FLOAT = "float64"
