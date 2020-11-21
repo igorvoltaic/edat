@@ -27,5 +27,21 @@ export default {
             const fileInput = document.querySelector('#upload-csv-file')
             document.querySelector("#upload-csv-file-label").innerHTML = fileInput.files[0].name
         },
+        addDataset: function() {
+            var data = new FormData()
+            const fileInput = document.querySelector('#upload-csv-file')
+            data.append('file', fileInput.files[0])
+            fetch('/api/datasets', {
+                method: 'POST',
+                body: data,
+            })
+            .then(response => response.json())
+            .then(result => {
+                this.fetchDatasets("1")
+            });
+
+            // Prevent default submission
+            return false;
+        },
     }
 }

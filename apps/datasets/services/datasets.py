@@ -3,6 +3,7 @@ import csv
 import datetime
 from typing import List, Optional
 from uuid import uuid4
+from django.db.models import UUIDField
 from dateutil.parser import parse as dateparse
 from django.conf import settings
 from django.core.files import File
@@ -46,7 +47,7 @@ def handle_uploaded_file(f):
     return uploaded_file.id
 
 
-def read_csv(filename, file_uuid) -> FileDTO:
+def read_csv(filename: str, file_uuid: UUIDField) -> FileDTO:
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
@@ -63,19 +64,21 @@ def read_csv(filename, file_uuid) -> FileDTO:
     else:
         # if there is not header
         line_num = sum(1 for line in file_obj.strip().split('\n'))
-    file_info = FileDTO(name=filename[:46] + filename[-4:],
+    filename = filename[:-4]
+    file_info = FileDTO(name="{}{}".format(filename[:46], ".csv"),
                         column_names=fieldnames,
                         column_types=[ColumnType(check_type(v))
                                       for v in next(reader).values()],
                         height=line_num,
-                        width=len(tuple(fieldnames)),
-                        file_id=file_uuid)
+                        width=len(fieldnames))
     return file_info
 
 
-def save_dataset(dataset_info: DatasetDTO) -> DatasetDTO:
+def save_dataset(file_uuid: UUIDField, dataset_info: FileDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
     dataset = Dataset.objects.create(**dataset_info.dict())
+    data_file = DatasetFile.objects.get(id=file_uuid)
+    data_file.dataset = dataset
     return DatasetDTO.from_orm(dataset)
 
 
@@ -107,7 +110,7 @@ def check_type(str_value):
 def delete_dataset(dataset_id: int) -> Optional[List[DatasetDTO]]:
     """ Delete selected dataset """
     try:
-        Dataset.objects.get(pk=dataset_id)
+        Dataset.objects.get(pk=dataset_id).delete()
     except Dataset.DoesNotExist:
         return None
     return get_all_datasets()

@@ -24,19 +24,18 @@ def read(dataset_id: int):
     return dataset
 
 
-@api_router.post("/datasets")
-# @api_router.post("/datasets", response_model=DatasetDTO)
+@api_router.post("/datasets", response_model=DatasetDTO)
 def create_item(file: UploadFile = File(...)):
     if not file.filename.split('.')[-1] == "csv" \
-            and not file.content_type == "text/csv":
+            or not file.content_type == "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
     file_uuid = handle_uploaded_file(file.file)
     dataset_info = read_csv(file.filename, file_uuid)
-    dataset = save_dataset(dataset_info)
-    # return file_info
+    dataset = save_dataset(file_uuid, dataset_info)
     return dataset
 
 
+# @api_router.delete("/datasets/{dataset_id}")
 @api_router.delete("/datasets/{dataset_id}", response_model=List[DatasetDTO])
 def delete_item(dataset_id: int):
     datasets = delete_dataset(dataset_id)

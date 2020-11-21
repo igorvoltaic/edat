@@ -30,4 +30,3 @@ class FileDTO(BaseModel):
     column_types: List[ColumnType]
     width: int
     height: int
-    file_id: UUID4

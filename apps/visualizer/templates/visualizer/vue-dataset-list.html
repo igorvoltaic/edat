@@ -7,8 +7,7 @@
 
 <script type="text/x-template" id="dataset-list-template">
     <div id="home-container" class="ui container">
-        <form class="ui form" action="/api/datasets" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
+        <form class="ui form" @submit.prevent="addDataset()" enctype="multipart/form-data">
             <div class="field">
                 <div class="pre-label-text">Select existing data dataset of upload new:</div>
                 <label for="upload-csv-file" id="upload-csv-file-label" class="ui button white">Choose file...</label>
@@ -52,7 +51,7 @@
 <script type="text/x-template" id="dataset-list-item-template">
 	<tr>
 		<td>[[ dataset.name ]]</td>
-		<td class="right aligned">[[ dataset.timestamp ]]</td>
+		<td class="right aligned">[[ formattedDate(dataset.timestamp) ]]</td>
 		<td>[[ dataset.height ]]x[[dataset.width]]</td>
 		<td>[[ dataset.comment ]]</td>
 		<td>

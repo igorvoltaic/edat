@@ -10,15 +10,26 @@ export default {
         }
     },
     methods: {
-        showId: function () {
-            alert(this.dataset.id)
+        formattedDate: function (date) {
+            const d = new Date(date)
+            function leadZero(n) {
+              if(n <= 9){
+                return "0" + n;
+              }
+              return n
+            }
+            return `${leadZero(d.getDate())}-${leadZero(d.getMonth())}-${d.getFullYear()} @ ${leadZero(d.getHours())}:${leadZero(d.getMinutes())}`
         },
         deleteDataset: function () {
-            fetch("datasets/" + this.dataset.id, {
+            fetch(`/api/datasets/${this.dataset.id}`, {
                 method: 'DELETE',
             })
+            .then(response => response.json())
+            .then(result => {
+                this.$parent.fetchDatasets("1")
+            })
         },
-        // edit-dataset: function () {
+        // editDataset: function () {
         //     fetch(`/datasets/${this.dataset.id}`, {
         //     .then(response => response.json())
         //     .then(result => {
