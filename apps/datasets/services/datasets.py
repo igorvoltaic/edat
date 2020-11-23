@@ -77,8 +77,9 @@ def read_csv(filename: str, file_uuid: UUIDField) -> FileDTO:
 def save_dataset(file_uuid: UUIDField, dataset_info: FileDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
     dataset = Dataset.objects.create(**dataset_info.dict())
-    data_file = DatasetFile.objects.get(id=file_uuid)
-    data_file.dataset = dataset
+    dataset_file = DatasetFile.objects.get(pk=file_uuid)
+    dataset_file.dataset_id = dataset.id
+    dataset_file.save()
     return DatasetDTO.from_orm(dataset)
 
 
@@ -107,10 +108,15 @@ def check_type(str_value):
     return "string"
 
 
-def delete_dataset(dataset_id: int) -> Optional[List[DatasetDTO]]:
+def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     """ Delete selected dataset """
     try:
-        Dataset.objects.get(pk=dataset_id).delete()
+        dataset = Dataset.objects.get(pk=dataset_id)
+        if dataset.file:
+            if os.path.isfile(dataset.file.upload.path):
+                os.remove(dataset.file.upload.path)
+        dataset.file.delete()
+        dataset.delete()
     except Dataset.DoesNotExist:
         return None
-    return get_all_datasets()
+    return DatasetDTO.from_orm(dataset)

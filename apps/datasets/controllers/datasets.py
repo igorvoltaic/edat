@@ -36,9 +36,9 @@ def create_item(file: UploadFile = File(...)):
 
 
 # @api_router.delete("/datasets/{dataset_id}")
-@api_router.delete("/datasets/{dataset_id}", response_model=List[DatasetDTO])
+@api_router.delete("/datasets/{dataset_id}", response_model=DatasetDTO)
 def delete_item(dataset_id: int):
-    datasets = delete_dataset(dataset_id)
-    if not datasets:
+    dataset = delete_dataset(dataset_id)
+    if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
-    return datasets
+    return dataset
