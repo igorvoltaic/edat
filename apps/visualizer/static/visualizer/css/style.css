@@ -24,6 +24,10 @@ div#home-container div#dataset-table button {
 div#home-container div#dataset-table table {
   border: 1px solid #444;
 }
+div#home-container div#dataset-table table .datasetListRow:hover {
+  background-color: lightyellow;
+  cursor: pointer;
+}
 div#home-container div#dataset-table table thead tr th {
   color: lightgray;
   background-color: #444;

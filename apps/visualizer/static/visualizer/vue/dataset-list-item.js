@@ -20,7 +20,9 @@ export default {
             }
             return `${leadZero(d.getDate())}-${leadZero(d.getMonth())}-${d.getFullYear()} @ ${leadZero(d.getHours())}:${leadZero(d.getMinutes())}`
         },
-        deleteDataset: function () {
+        deleteDataset: function (event) {
+            event.preventDefault();
+            event.stopPropagation();
             fetch(`/api/datasets/${this.dataset.id}`, {
                 method: 'DELETE',
             })
@@ -28,6 +30,12 @@ export default {
             .then(result => {
                 this.$parent.fetchDatasets("1")
             })
+        },
+        openDataset: function() {
+            this.$router.push({ name: 'dataset', params: { this.dataset.id } })
+        },
+        editDataset: function() {
+            alert('edit!');
         },
         // editDataset: function () {
         //     fetch(`/datasets/${this.dataset.id}`, {

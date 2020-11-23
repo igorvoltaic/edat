@@ -27,6 +27,11 @@ div#home-container {
 		}
 		table {
 			border: 1px solid #444;
+            .datasetListRow:hover {
+                background-color: lightyellow;
+                cursor: pointer;
+
+            }
 			thead { 
 				tr { 
 					th{ 

@@ -1,8 +1,8 @@
 import os
 import csv
 import datetime
+from tempfile import SpooledTemporaryFile
 from typing import List, Optional
-from uuid import uuid4
 from django.db.models import UUIDField
 from dateutil.parser import parse as dateparse
 from django.conf import settings
@@ -28,22 +28,10 @@ def get_all_datasets() -> List[DatasetDTO]:
     return [DatasetDTO.from_orm(d) for d in datasets]
 
 
-def uniq_filename(file_uuid: str):
-    """ Check if uuid filename is uniq """
-    path = os.path.join(os.path.abspath(settings.MEDIA_ROOT),
-                        "apps/datasets/uploads/")
-    file_path = os.path.join(path, f"{file_uuid}.csv")
-    if not os.path.isfile(file_path):
-        return file_uuid
-    uniq_filename(str(uuid4()))
-
-
-def handle_uploaded_file(f):
+def handle_uploaded_file(f: SpooledTemporaryFile) -> UUIDField:
     """ Check if filename is unique and save uploaded file """
-    file = File(f).file.read()
-    file_uuid = uniq_filename(str(uuid4()))
-    uploaded_file = DatasetFile(id=file_uuid)
-    uploaded_file.upload.save(f"{file_uuid}.csv", ContentFile(file))
+    uploaded_file = DatasetFile()
+    uploaded_file.upload.save(f"{uploaded_file.id}.csv", f)
     return uploaded_file.id
 
 
@@ -52,7 +40,7 @@ def read_csv(filename: str, file_uuid: UUIDField) -> FileDTO:
         from the file to determine datatypes
     """
     file = DatasetFile.objects.get(pk=file_uuid)
-    file_obj = File(file.upload).file.read().decode('utf-8')
+    file_obj = File(file.upload).file.read().decode()
     sniffer = csv.Sniffer()
     dialect = sniffer.sniff(file_obj)
     has_header = sniffer.has_header(file_obj)
@@ -67,8 +55,7 @@ def read_csv(filename: str, file_uuid: UUIDField) -> FileDTO:
     filename = filename[:-4]
     file_info = FileDTO(name="{}{}".format(filename[:46], ".csv"),
                         column_names=fieldnames,
-                        column_types=[ColumnType(check_type(v))
-                                      for v in next(reader).values()],
+                        column_types=[check_type(v) for v in next(reader).values()],
                         height=line_num,
                         width=len(fieldnames))
     return file_info
@@ -87,25 +74,25 @@ def check_type(str_value):
     """ Try to determine datatype from a string """
     try:
         if isinstance(int(str_value), int):
-            return "number"
+            return ColumnType.INT
     except ValueError:
         pass
     try:
         if isinstance(float(str_value), float):
-            return "float"
+            return ColumnType.FLOAT
     except ValueError:
         pass
     try:
         if isinstance(dateparse(str_value), datetime.date):
-            return "datetime"
+            return ColumnType.DATETIME
     except ValueError:
         pass
     try:
         if str_value.lower() == "true" or str_value.lower() == "false":
-            return "boolean"
+            return ColumnType.BOOLEAN
     except ValueError:
         pass
-    return "string"
+    return ColumnType.STRING
 
 
 def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:

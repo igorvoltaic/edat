@@ -7,7 +7,7 @@
 
 <script type="text/x-template" id="dataset-list-template">
     <div id="home-container" class="ui container">
-        <form class="ui form" @submit.prevent="addDataset()" enctype="multipart/form-data">
+        <form class="ui form" @submit.prevent="addDataset" enctype="multipart/form-data">
             <div class="field">
                 <div class="pre-label-text">Select existing data dataset of upload new:</div>
                 <label for="upload-csv-file" id="upload-csv-file-label" class="ui button white">Choose file...</label>
@@ -49,14 +49,14 @@
 </script>
 
 <script type="text/x-template" id="dataset-list-item-template">
-	<tr>
+	<tr @click="openDataset" class="datasetListRow">
 		<td>[[ dataset.name ]]</td>
 		<td class="right aligned">[[ formattedDate(dataset.timestamp) ]]</td>
 		<td>[[ dataset.height ]]x[[dataset.width]]</td>
 		<td>[[ dataset.comment ]]</td>
 		<td>
-			<button @click="deleteDataset();" class="ui button red">Delete</button>
-			<button @click="showId();" class="ui button green">Edit</button>
+			<button @click="deleteDataset($event)" class="ui button red">Delete</button>
+			<button @click="editDataset" class="ui button green">Edit</button>
 		</td>
 	</tr>
 </script>
