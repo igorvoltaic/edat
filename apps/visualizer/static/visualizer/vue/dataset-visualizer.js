@@ -1,9 +1,12 @@
 export default {
+    name: 'dataset-visualizer',
     template: '#dataset-visualizer-template',
+    delimiters: ['[[',']]'],
     components: {
-        'dataset-list-item': () => import(staticFiles + "vue/dataset-list-item.js"),
+        'dataset-visualizer-datarow': () => import(staticFiles + "vue/dataset-visualizer-datarow.js"),
+
     },
-   data() {
+    data() {
         return {
             dataset: null,
         }

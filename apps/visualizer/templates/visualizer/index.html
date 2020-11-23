@@ -28,19 +28,9 @@
 
         <script src="{% static 'visualizer/app.js' %}"></script>
 
-        {# Load only needed Vue components based on auth #}
-        {% if not user.is_authenticated %}
-            {% block login %}{% endblock %}
-            {% include "visualizer/vue-login.html" %}
-            {% block register %}{% endblock %}
-            {% include "visualizer/vue-register.html" %}
-        {% endif %}
+        {% block templates %}{% endblock %}
+        {% include "visualizer/_templates.html" %}
 
-        {% block home %}{% endblock %}
-        {% include "visualizer/vue-dataset-list.html" %}
-
-        {% block navigation %}{% endblock %}
-        {% include "visualizer/vue-navigation.html" %}
 
     </body>
 </html>

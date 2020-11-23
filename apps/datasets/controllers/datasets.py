@@ -19,6 +19,7 @@ def read_all():
 @api_router.get("/datasets/{dataset_id}", response_model=DatasetDTO)
 def read(dataset_id: int):
     dataset = get_dataset(dataset_id)
+    data_rows = get_file_data(dataset.file_uuid)
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
     return dataset
@@ -35,7 +36,6 @@ def create_item(file: UploadFile = File(...)):
     return dataset
 
 
-# @api_router.delete("/datasets/{dataset_id}")
 @api_router.delete("/datasets/{dataset_id}", response_model=DatasetDTO)
 def delete_item(dataset_id: int):
     dataset = delete_dataset(dataset_id)

@@ -1,41 +1,34 @@
 {% load static %}
 
-{% block navigation %}
+{% block dataset-visualizer %}
 
 
 {# Vue templates #}
 
 <script type="text/x-template" id="dataset-visualizer-template">
     <div id="home-container" class="ui container">
-		<div id="dataset-table" class="ui container">
+        <h1>[[ dataset.name ]]</h1>
+		<div id="data-table" class="ui container">
 			<table class="ui celled striped table">
 				<thead>
-					<tr v-for='column in dataset.column_names'>
-						<th class="center aligned">[[ column ]]</th>
-					</tr>
-					<tr v-for='type in dataset.column_types'>
-						<th class="center aligned">
-                            <input list="column_types" name="column_type" id="column_type" value="[[ type ]]">
-                            <datalist id="column_types">
-                                <option value="number">
-                                <option value="float">
-                                <option value="datetime">
-                                <option value="boolean">
-                                <option value="string">
-                            </datalist>
-                        </th>
-					</tr>
+                    <tr>
+						<th v-for="rows in dataset.width" class="center aligned">fieldname</th> 
+					</tr> 
+                    <tr>
+						<th v-for="rows in dataset.width" class="center aligned">datatype</th> 
+					</tr> 
 				</thead>
 			    <tbody>
-					<!-- <dataset-visualizer-datarow -->
-					<!-- 	v-for="row in rows" --> 
-                        <!-- :dataset="row" -->
-					<!-- 	:key="row"> -->
-					<!-- </dataset-visualizer-datarow> -->
+                    <dataset-visualizer-datarow :data="dataset">
+					</dataset-visualizer-datarow>
 			  </tbody>
 			</table>
 		</div>
     </div>
 </script>
 
-{% endblock %}
+<script type="text/x-template" id="dataset-visualizer-datarow-template">
+    <tr>
+		<th v-for="rows in data.width" class="center aligned">data</th> 
+    </tr>
+</script>{% endblock %}

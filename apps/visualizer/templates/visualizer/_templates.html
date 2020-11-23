@@ -1,0 +1,26 @@
+{% load static %}
+
+{% block templates %}
+
+
+{# Vue templates #}
+
+{# Load only needed Vue templates based on auth #}
+{% if not user.is_authenticated %}
+    {% block login %}{% endblock %}
+    {% include "visualizer/vue-login.html" %}
+    {% block register %}{% endblock %}
+    {% include "visualizer/vue-register.html" %}
+{% endif %}
+
+{% block home %}{% endblock %}
+{% include "visualizer/vue-dataset-list.html" %}
+
+{% block dataset_visualizer %}{% endblock %}
+{% include "visualizer/vue-dataset-visualizer.html" %}
+
+{% block navigation %}{% endblock %}
+{% include "visualizer/vue-navigation.html" %}
+
+
+{% endblock %}

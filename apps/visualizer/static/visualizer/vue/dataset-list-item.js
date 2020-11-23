@@ -32,17 +32,11 @@ export default {
             })
         },
         openDataset: function() {
-            this.$router.push({ name: 'dataset', params: { this.dataset.id } })
+            let datasetId = this.dataset.id
+            router.push({ name: 'dataset', params: { id: datasetId } }) // -> /dataset/:id
         },
         editDataset: function() {
             alert('edit!');
         },
-        // editDataset: function () {
-        //     fetch(`/datasets/${this.dataset.id}`, {
-        //     .then(response => response.json())
-        //     .then(result => {
-        //             // console.log('opened dataset editor')
-        //         }
-        // }),
     },
 }

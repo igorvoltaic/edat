@@ -22,6 +22,30 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     return DatasetDTO.from_orm(dataset)
 
 
+def get_file_data(dataset.file_uuid):
+    file = DatasetFile.objects.get(pk=file_uuid)
+    file_obj = File(file.upload).file.read().decode()
+    sniffer = csv.Sniffer()
+    dialect = sniffer.sniff(file_obj)
+    has_header = sniffer.has_header(file_obj)
+    reader = csv.DictReader(file_obj.split('\n'), dialect=dialect)
+    fieldnames = reader.fieldnames
+    if has_header:
+        # remove header line
+        line_num = sum(1 for line in file_obj.strip().split('\n')) - 1
+    else:
+        # if there is not header
+        line_num = sum(1 for line in file_obj.strip().split('\n'))
+    filename = filename[:-4]
+    file_info = FileDTO(name="{}{}".format(filename[:46], ".csv"),
+                        column_names=fieldnames,
+                        column_types=[check_type(v) for v in next(reader).values()],
+                        height=line_num,
+                        width=len(fieldnames))
+    return file_info
+
+
+
 def get_all_datasets() -> List[DatasetDTO]:
     """ Get all datasets from the DB """
     datasets = Dataset.objects.all()
