@@ -115,7 +115,6 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:
         if dataset.file:
             if os.path.isfile(dataset.file.upload.path):
                 os.remove(dataset.file.upload.path)
-        dataset.file.delete()
         dataset.delete()
     except Dataset.DoesNotExist:
         return None
