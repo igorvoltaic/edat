@@ -1,7 +1,7 @@
 from enum import Enum
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, UUID4
+from pydantic import BaseModel
 
 
 class DatasetDTO(BaseModel):
