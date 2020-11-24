@@ -4,12 +4,10 @@ from django.db import models
 
 class Dataset(models.Model):
     """ Information about dataset file internals """
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=150)
     timestamp = models.DateTimeField(auto_now_add=True)
     height = models.IntegerField()
     width = models.IntegerField()
-    column_types = models.CharField(max_length=255, blank=True)
-    column_names = models.CharField(max_length=255, blank=True)
     comment = models.CharField(max_length=255, blank=True)
 
 

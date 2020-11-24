@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, File, UploadFile
 from apps.datasets.services import get_all_datasets, get_dataset, \
                                    read_csv, handle_uploaded_file, \
                                    save_dataset, delete_dataset
-from apps.datasets.dtos import DatasetDTO
+from apps.datasets.dtos import DatasetDTO, UploadFileDTO
 
 
 api_router = APIRouter()
@@ -19,7 +19,8 @@ def read_all():
 @api_router.get("/datasets/{dataset_id}", response_model=DatasetDTO)
 def read(dataset_id: int):
     dataset = get_dataset(dataset_id)
-    data_rows = get_file_data(dataset.file_uuid)
+    file_info = read_csv(dataset.name, dataset.file_id, uploaded_file=True)
+    dataset.file_info = file_info
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
     return dataset
@@ -31,8 +32,8 @@ def create_item(file: UploadFile = File(...)):
             or not file.content_type == "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
     file_uuid = handle_uploaded_file(file.file)
-    dataset_info = read_csv(file.filename, file_uuid)
-    dataset = save_dataset(file_uuid, dataset_info)
+    file_info = read_csv(file.filename, file_uuid, uploaded_file=False)
+    dataset = save_dataset(file_uuid, file_info)
     return dataset
 
 
