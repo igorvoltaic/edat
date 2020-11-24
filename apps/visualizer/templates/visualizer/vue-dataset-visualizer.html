@@ -16,13 +16,14 @@
                          class="center aligned">[[ column_name ]]</th> 
 					</tr> 
                     <tr>
-						<th v-for="column_type in column_types" class="center aligned">
-                            <select  name="column_types" id="column_types">
-                                <option 
+						<th v-for="column_type in column_types" class="type-dropdown-cell center aligned">
+                            <select class="type-dropdown" name="column_types" id="column_types">
+                                <option
                                  v-for="type in datatypes" 
                                  :value="type"
                                  :selected="type === column_type">[[ type ]]</option>
                             </select>
+                            <i class="dropdown icon"></i>
                         </th> 
 					</tr> 
 				</thead>

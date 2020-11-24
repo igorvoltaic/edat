@@ -17,6 +17,10 @@ export default {
     },
     created: function () {
         this.fetchDataset(this.$route.params.id)
+        $('.tag.example .ui.dropdown')
+        .dropdown({
+            allowAdditions: true
+        });
     },
     methods: {
         fetchDataset: function (dataset_id) {

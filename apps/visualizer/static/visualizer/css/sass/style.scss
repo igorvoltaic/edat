@@ -77,5 +77,53 @@ div#home-container {
         }
         
     }
+}
 
+div#data-table {
+
+    table {
+
+        th.type-dropdown-cell {
+
+            margin: 0;
+            padding: 0;
+            height: 3em;
+
+            select {
+                margin: 0;
+                padding-top: 2px;
+                text-align: center;
+                width: 97%;
+                height: 100%;
+                background: #f9fafb !important;
+                border: 0;
+                /* remove the original arrow */
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                -o-appearance: none;
+                /* no standardized syntax available, no ie-friendly solution available */
+                option {
+                    text-align: center;
+                    line-height: 2em;
+                }
+            }
+            select + i.icon {
+                float: right;
+                margin-top: -2.2em;
+                margin-right: 10px;
+                /* everything after this is just to cover up the original arrow */
+                /* (for browsers that don't support the syntax used above) */
+                background-color: transparent;
+                color: black !important;
+                padding-right: 5px;
+            }
+            i.icon {
+                z-index: 100;
+                appearance: none;
+                position: relative;
+                pointer-events: none;
+            }
+
+        }
+    }
 }

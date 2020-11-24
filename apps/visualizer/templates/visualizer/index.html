@@ -4,11 +4,12 @@
 <html lang="en">
     <head>
         <title>{% block title %} Edat {% endblock %}</title>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+        <link rel="stylesheet" type="text/css" 
+              href="{% static 'visualizer/css/semantic/dist/semantic.min.css' %}">
+        <link href="{% static 'visualizer/css/style.css' %}" rel="stylesheet">
+        <script src="{% static 'visualizer/css/semantic/dist/semantic.min.js' %}"></script>
         <script src="https://unpkg.com/vue"></script>
         <script src="https://unpkg.com/vue-router"></script>
-        <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/semantic/dist/semantic.min.css' %}">
-        <link href="{% static 'visualizer/css/style.css' %}" rel="stylesheet">
     </head>
     <body>
         <div id="app">
