@@ -20,7 +20,10 @@ export default {
 			fetch(`/api/datasets?page=${p}`)
 			.then(response => response.json())
 			.then(result => {
-				this.datasets = result; // add pagination
+				this.datasets = result.datasets;
+                this.hasNext = result.has_next;
+                this.hasPrev = result.has_prev;
+                this.numPages = result.num_pages;
 			});
         },
         showFilename: function () {

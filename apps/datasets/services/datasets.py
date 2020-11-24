@@ -6,8 +6,10 @@ from typing import List, Optional, Union
 from uuid import UUID
 from dateutil.parser import parse as dateparse
 from django.core.files import File
+from django.core.paginator import Paginator
 
-from apps.datasets.dtos import DatasetDTO, FileDTO, UploadFileDTO, ColumnType
+from apps.datasets.dtos import DatasetDTO, FileDTO, UploadFileDTO, ColumnType, \
+                               PageDTO
 from apps.datasets.models import Dataset, DatasetFile
 
 
@@ -21,10 +23,20 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
         return None
     return dto
 
-def get_all_datasets() -> List[DatasetDTO]:
+
+def get_all_datasets(page_num: int) -> PageDTO:
     """ Get all datasets from the DB """
-    datasets = Dataset.objects.all()
-    return [DatasetDTO.from_orm(d) for d in datasets]
+    datasets = Dataset.objects.order_by("-timestamp")
+    paginator = Paginator(datasets, 20)
+    if not page_num:
+        page_num = 1
+    page = paginator.page(page_num)
+    page_data = PageDTO(
+        datasets=[DatasetDTO.from_orm(d) for d in page.object_list],
+        has_next=page.has_next(),
+        has_prev=page.has_previous(),
+        num_pages=paginator.num_pages)
+    return page_data
 
 
 def handle_uploaded_file(f: SpooledTemporaryFile) -> UUID:

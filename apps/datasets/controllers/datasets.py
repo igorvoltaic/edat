@@ -4,16 +4,16 @@ from fastapi import APIRouter, HTTPException, File, UploadFile
 from apps.datasets.services import get_all_datasets, get_dataset, \
                                    read_csv, handle_uploaded_file, \
                                    save_dataset, delete_dataset
-from apps.datasets.dtos import DatasetDTO, UploadFileDTO
+from apps.datasets.dtos import DatasetDTO, PageDTO
 
 
 api_router = APIRouter()
 
 
-@api_router.get("/datasets", response_model=List[DatasetDTO])
-def read_all():
-    datasets = get_all_datasets()
-    return datasets
+@api_router.get("/datasets", response_model=PageDTO)
+def read_all(page: int):
+    page_data = get_all_datasets(page)
+    return page_data
 
 
 @api_router.get("/datasets/{dataset_id}", response_model=DatasetDTO)

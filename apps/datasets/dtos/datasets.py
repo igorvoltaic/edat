@@ -38,3 +38,11 @@ class DatasetDTO(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PageDTO(BaseModel):
+    """ Returns page dto model for datasets home page """
+    datasets: List[DatasetDTO]
+    has_next: bool
+    has_prev: bool
+    num_pages: int
