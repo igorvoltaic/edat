@@ -8,7 +8,11 @@ export default {
     },
     data() {
         return {
-            dataset: null,
+            dataset: [],
+            column_names: [],
+            column_types: [],
+            datatypes: ['number', 'float', 'datetime', 'boolean', 'string'],
+            rows: [],
         }
     },
     created: function () {
@@ -20,6 +24,9 @@ export default {
 			.then(response => response.json())
 			.then(result => {
 				this.dataset = result;
+                this.column_names = result.file_info.column_names;
+                this.column_types = result.file_info.column_types;
+                this.rows = result.file_info.datarows;
 			});
         },
     }

@@ -10,7 +10,7 @@
     const navLinks = [
             { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js")},
             { name: 'logout', meta: 'Log Out', path: "{% url 'logout' %}", component: {created: function () {window.location.replace('/logout')}} },
-            { name: 'dataset', path: '/api/dataset/:id', component: () => import(staticFiles + "vue/dataset-visualizer.js") },
+            { name: 'dataset', path: '/api/datasets/:id', component: () => import(staticFiles + "vue/dataset-visualizer.js") },
 
     ]
 

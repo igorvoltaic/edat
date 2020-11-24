@@ -12,14 +12,23 @@
 			<table class="ui celled striped table">
 				<thead>
                     <tr>
-						<th v-for="rows in dataset.width" class="center aligned">fieldname</th> 
+						<th v-for="column_name in column_names" 
+                         class="center aligned">[[ column_name ]]</th> 
 					</tr> 
                     <tr>
-						<th v-for="rows in dataset.width" class="center aligned">datatype</th> 
+						<th v-for="column_type in column_types" class="center aligned">
+                            <select  name="column_types" id="column_types">
+                                <option 
+                                 v-for="type in datatypes" 
+                                 :value="type"
+                                 :selected="type === column_type">[[ type ]]</option>
+                            </select>
+                        </th> 
 					</tr> 
 				</thead>
 			    <tbody>
-                    <dataset-visualizer-datarow :data="dataset">
+                    <dataset-visualizer-datarow
+                     v-for="row in rows" :key="row.index" :data="row">
 					</dataset-visualizer-datarow>
 			  </tbody>
 			</table>
@@ -29,6 +38,6 @@
 
 <script type="text/x-template" id="dataset-visualizer-datarow-template">
     <tr>
-		<th v-for="rows in data.width" class="center aligned">data</th> 
+		<td v-for="d in data" class="center aligned">[[ d ]]</td> 
     </tr>
 </script>{% endblock %}
