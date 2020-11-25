@@ -45,7 +45,7 @@
 			  </tbody>
 			</table>
             <div class="ui pagination menu">
-                <a class="active item">
+                <a v-if="numPages <= 5" class="item" :class="{active: isActivePage}">
                 1
                 </a>
                 <div class="disabled item">
