@@ -1,30 +1,44 @@
 export default {
+    name: 'dataset-list',
+    delimiters: ['[[',']]'],
     template: '#dataset-list-template',
     components: {
         'dataset-list-item': () => import(staticFiles + "vue/dataset-list-item.js"),
     },
-   data() {
+    data() {
         return {
             pageNum: 1,
-            datasets: null,
+            datasets: [],
             hasNext: null,
             hasPrev: null,
-            auth: auth
+            auth: auth,
+            numPages: null,
         }
     },
     created: function () {
-        this.fetchDatasets(this.pageNum)
+        this.fetchDatasets(this.pageNum);
     },
     methods: {
-        fetchDatasets: function (p) {
-			fetch(`/api/datasets?page=${p}`)
-			.then(response => response.json())
-			.then(result => {
-				this.datasets = result.datasets;
-                this.hasNext = result.has_next;
-                this.hasPrev = result.has_prev;
-                this.numPages = result.num_pages;
-			});
+        isActivePage: function(n) {
+            if (this.pageNum !== n) {
+                return false
+            }
+            return true
+        },
+        fetchDatasets: function (p, q = false) {
+            let searchString = ''
+            if (q) {
+                searchString = '&q=' + document.querySelector('#search').value
+            }
+            fetch(`/api/datasets?page=${p}${searchString}`)
+                .then(response => response.json())
+                .then(result => {
+                    this.datasets = result.datasets;
+                    this.hasNext = result.has_next;
+                    this.hasPrev = result.has_prev;
+                    this.numPages = result.num_pages;
+                    this.pageNum = result.page_num;
+                });
         },
         showFilename: function () {
             const fileInput = document.querySelector('#upload-csv-file')
@@ -38,10 +52,10 @@ export default {
                 method: 'POST',
                 body: data,
             })
-            .then(response => response.json())
-            .then(result => {
-                this.fetchDatasets("1")
-            });
+                .then(response => response.json())
+                .then(result => {
+                    this.fetchDatasets("1")
+                });
 
             // Prevent default submission
             return false;

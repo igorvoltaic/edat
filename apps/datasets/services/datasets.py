@@ -7,6 +7,7 @@ from uuid import UUID
 from dateutil.parser import parse as dateparse
 from django.core.files import File
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 from apps.datasets.dtos import DatasetDTO, FileDTO, UploadFileDTO, ColumnType, \
                                PageDTO
@@ -24,17 +25,22 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     return dto
 
 
-def get_all_datasets(page_num: int) -> PageDTO:
+def get_all_datasets(page_num: int, q: str = None) -> PageDTO:
     """ Get all datasets from the DB """
-    datasets = Dataset.objects.order_by("-timestamp")
-    paginator = Paginator(datasets, 20)
+    if not q:
+        datasets = Dataset.objects.order_by("-timestamp")
+    else:
+        datasets = Dataset.objects.filter(Q(name__icontains=q) |
+                                          Q(comment__icontains=q))
+    paginator = Paginator(datasets, 7)
     if not page_num:
         page_num = 1
-    page = paginator.page(page_num)
+    page = paginator.get_page(page_num)
     page_data = PageDTO(
         datasets=[DatasetDTO.from_orm(d) for d in page.object_list],
         has_next=page.has_next(),
         has_prev=page.has_previous(),
+        page_num=page.number,
         num_pages=paginator.num_pages)
     return page_data
 

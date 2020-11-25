@@ -45,4 +45,5 @@ class PageDTO(BaseModel):
     datasets: List[DatasetDTO]
     has_next: bool
     has_prev: bool
+    page_num: int
     num_pages: int

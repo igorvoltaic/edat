@@ -11,8 +11,8 @@ api_router = APIRouter()
 
 
 @api_router.get("/datasets", response_model=PageDTO)
-def read_all(page: int):
-    page_data = get_all_datasets(page)
+def read_all(page: int, q: str = None):
+    page_data = get_all_datasets(page, q)
     return page_data
 
 

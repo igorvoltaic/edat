@@ -35,8 +35,11 @@ export default {
             let datasetId = this.dataset.id
             router.push({ name: 'dataset', params: { id: datasetId } }) // -> /dataset/:id
         },
-        editDataset: function() {
+        editDataset: function(event) {
+            event.preventDefault();
+            event.stopPropagation();
             alert('edit!');
+
         },
     },
 }

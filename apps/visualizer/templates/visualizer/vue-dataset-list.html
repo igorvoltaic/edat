@@ -16,7 +16,7 @@
             </div>
         </form>
 		<div id="dataset-table" class="ui container">
-			<form id="search-form" class="ui form" onsubmit="fetchItems(); return false;">
+            <form id="search-form" @submit.prevent="fetchDatasets(1, true)" class="ui form">
 				<div class="field">
 					<div class="ui labeled input">
 						<div class="ui label">
@@ -45,20 +45,8 @@
 			  </tbody>
 			</table>
             <div class="ui pagination menu">
-                <a v-if="numPages <= 5" class="item" :class="{active: isActivePage}">
-                1
-                </a>
-                <div class="disabled item">
-                ...
-                </div>
-                <a class="item">
-                10
-                </a>
-                <a class="item">
-                11
-                </a>
-                <a class="item">
-                12
+                <a v-for="n in numPages" @click="fetchDatasets(n)" class="item" :class="{active: isActivePage(n)}">
+                    [[ n ]]
                 </a>
             </div>
 		</div>
@@ -67,13 +55,13 @@
 
 <script type="text/x-template" id="dataset-list-item-template">
 	<tr @click="openDataset" class="datasetListRow">
-		<td>[[ dataset.name ]]</td>
+		<td data-id="dataset.id" class="dataset-name">[[ dataset.name ]]</td>
 		<td class="right aligned">[[ formattedDate(dataset.timestamp) ]]</td>
 		<td>[[ dataset.height ]]x[[dataset.width]]</td>
-		<td>[[ dataset.comment ]]</td>
+		<td data-id="dataset.id" class="dataset-comment">[[ dataset.comment ]]</td>
 		<td>
 			<button @click="deleteDataset($event)" class="ui button red">Delete</button>
-			<button @click="editDataset" class="ui button green">Edit</button>
+			<button @click="editDataset($event)" class="ui button green">Edit</button>
 		</td>
 	</tr>
 </script>
