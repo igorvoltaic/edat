@@ -32,19 +32,14 @@ def upload_dataset_file(file: UploadFile = File(...)):
     if file.filename.split('.')[-1] != "csv" \
             or file.content_type != "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
-    tempfile = handle_uploaded_file(file.filename, file.file.read())
-    file_info = read_csv(file.filename, tempfile)
+    file_info = handle_uploaded_file(file.filename, file.file.read())
     return file_info
 
 
-# @api_router.post("/save_dataset", response_model=DatasetDTO)
-# def save_dataset(
-#         tmpfile: str,
-#         column_names: List[str] = Form(...),
-#         column_types: List[str] = Form(...),
-#         ):
-#     dataset = save_dataset(tmpfile, column_names, column_types)
-#     pass
+@api_router.post("/save_dataset", response_model=DatasetDTO)
+def save_dataset(file_info: FileDTO):
+    dataset = save_dataset(tmpfile, column_names, column_types)
+    pass
 
 
 @api_router.delete("/datasets/{dataset_id}", response_model=DatasetDTO)

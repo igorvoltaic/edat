@@ -62,10 +62,11 @@ def get_all_datasets(page_num: int, q: str = None) -> PageDTO:
     return page_data
 
 
-def handle_uploaded_file(filename: str, file: bytes) -> str:
+def handle_uploaded_file(filename: str, file: bytes) -> FileDTO:
     """ Save file to Django's default temporary file location """
     tempfile = create_temporary_file(filename, file)
-    return tempfile
+    file_info = read_csv(filename, tempfile)
+    return file_info
 
 
 def read_csv(filename: str, filepath: str,) -> FileDTO:
@@ -96,11 +97,7 @@ def read_csv(filename: str, filepath: str,) -> FileDTO:
     return file_info
 
 
-def save_dataset(
-            tempfile: str,
-            column_names: List[str],
-            column_types: List[str]
-        ) -> DatasetDTO:
+def save_dataset(file_info: FileDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
     orig_filename = recreate_filename(tempfile)
     tempfilepath = get_tmpfilepath(tempfile)
