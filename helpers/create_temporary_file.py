@@ -1,17 +1,13 @@
-from tempfile import NamedTemporaryFile
+import os
 
 from .tmpdir import tmpdir
 
 
-def create_temporary_file(filename: str, content: bytes) -> str:
+def create_temporary_file(filename: str, file_id: str, content: bytes) -> str:
     """ Create a temporary file and write uploaded data inside it """
-    prefix = (f"{filename}__tmpfile__")
-    file = NamedTemporaryFile(
-        prefix=prefix,
-        delete=False,
-        dir=tmpdir(),
-        mode='wb'
-    )
-    file.write(content)
-    file.close()
-    return file.name
+    dirpath = os.path.join(tmpdir(), file_id)
+    os.mkdir(dirpath)
+    filepath = os.path.join(dirpath, filename)
+    with open(filepath, 'wb') as file:
+        file.write(content)
+    return filepath

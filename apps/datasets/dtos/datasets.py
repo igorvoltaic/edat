@@ -22,8 +22,8 @@ class ColumnType(str, Enum):
 
 
 class FileDTO(BaseModel):
-    name_info: str
-    tmpfile: str
+    filename: str
+    file_id: str
     width: int
     height: int
     column_names: List[str] = ...

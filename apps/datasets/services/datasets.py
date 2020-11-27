@@ -8,13 +8,12 @@ from dateutil.parser import parse as dateparse
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from apps.datasets.dtos import DatasetDTO, FileDTO, ColumnType, \
-                               PageDTO
+from apps.datasets.dtos import DatasetDTO, FileDTO, ColumnType, PageDTO
 from apps.datasets.models import Dataset, DatasetFile
 
 from helpers.create_temporary_file import create_temporary_file
 from helpers.get_tmpfilepath import get_tmpfilepath
-from helpers.get_tmpfilename import get_tmpfilename
+from helpers.get_file_id import get_file_id
 
 
 __all__ = [
@@ -63,8 +62,9 @@ def get_all_datasets(page_num: int, q: str = None) -> PageDTO:
 
 def handle_uploaded_file(filename: str, file: bytes) -> FileDTO:
     """ Save file to Django's default temporary file location """
-    tempfile = create_temporary_file(filename, file)
-    file_info = read_csv(filename, tempfile)
+    file_id = get_file_id()
+    tempfile = create_temporary_file(filename, file_id, file)
+    file_info = read_csv(filename, file_id, tempfile)
     return file_info
 
 
