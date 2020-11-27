@@ -15,13 +15,13 @@ from apps.datasets.models import Dataset, DatasetFile
 from helpers.create_temporary_file import create_temporary_file
 from helpers.get_tmpfilepath import get_tmpfilepath
 from helpers.get_tmpfilename import get_tmpfilename
-from helpers.recreate_filename import recreate_filename
 
 
 __all__ = [
     'get_dataset',
     'get_all_datasets',
-    'read_csv', 'save_dataset',
+    'read_csv',
+    'create_new_dataset',
     'delete_dataset',
     'handle_uploaded_file'
 ]
