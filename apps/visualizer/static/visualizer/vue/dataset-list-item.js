@@ -38,8 +38,6 @@ export default {
         editDataset: function(event) {
             event.preventDefault();
             event.stopPropagation();
-            alert('edit!');
-
         },
     },
 }

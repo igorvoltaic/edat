@@ -1,3 +1,13 @@
+.dataset-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1em;
+}
+.dataset-editor-header h1 {
+  margin: 0;
+}
+
 div#site-header.item {
   padding-right: 0 !important;
 }

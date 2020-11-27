@@ -1,17 +1,31 @@
 import os
 import csv
 import datetime
-from tempfile import SpooledTemporaryFile
-from typing import List, Optional, Union
+
+from typing import Optional, List
 from uuid import UUID
 from dateutil.parser import parse as dateparse
-from django.core.files import File
+
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from apps.datasets.dtos import DatasetDTO, FileDTO, UploadFileDTO, ColumnType, \
+from apps.datasets.dtos import DatasetDTO, FileDTO, ColumnType, \
                                PageDTO
 from apps.datasets.models import Dataset, DatasetFile
+
+from helpers.create_temporary_file import create_temporary_file
+from helpers.get_tmpfilepath import get_tmpfilepath
+from helpers.get_tmpfilename import get_tmpfilename
+from helpers.recreate_filename import recreate_filename
+
+
+__all__ = [
+    'get_dataset',
+    'get_all_datasets',
+    'read_csv', 'save_dataset',
+    'delete_dataset',
+    'handle_uploaded_file'
+]
 
 
 def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
@@ -30,8 +44,10 @@ def get_all_datasets(page_num: int, q: str = None) -> PageDTO:
     if not q:
         datasets = Dataset.objects.order_by("-timestamp")
     else:
-        datasets = Dataset.objects.filter(Q(name__icontains=q) |
-                                          Q(comment__icontains=q))
+        datasets = Dataset.objects.filter(
+                Q(name__icontains=q) |
+                Q(comment__icontains=q)
+        )
     paginator = Paginator(datasets, 7)
     if not page_num:
         page_num = 1
@@ -41,53 +57,56 @@ def get_all_datasets(page_num: int, q: str = None) -> PageDTO:
         has_next=page.has_next(),
         has_prev=page.has_previous(),
         page_num=page.number,
-        num_pages=paginator.num_pages)
+        num_pages=paginator.num_pages
+    )
     return page_data
 
 
-def handle_uploaded_file(f: SpooledTemporaryFile) -> UUID:
-    """ Check if filename is unique and save uploaded file """
-    uploaded_file = DatasetFile()
-    uploaded_file.upload.save(f"{uploaded_file.id}.csv", f)
-    return uploaded_file.id
+def handle_uploaded_file(filename: str, file: bytes) -> str:
+    """ Save file to Django's default temporary file location """
+    tempfile = create_temporary_file(filename, file)
+    return tempfile
 
 
-def read_csv(filename: str,
-             file_uuid: UUID,
-             uploaded_file: bool = False) -> Union[FileDTO, UploadFileDTO]:
+def read_csv(filename: str, filepath: str,) -> FileDTO:
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
-    file = DatasetFile.objects.get(pk=file_uuid)
-    file_obj = File(file.upload).file.read().decode()
+    file = open(filepath, 'r').read()
     sniffer = csv.Sniffer()
-    dialect = sniffer.sniff(file_obj)
-    reader = csv.DictReader(file_obj.split('\n'), dialect=dialect)
+    dialect = sniffer.sniff(file)
+    reader = csv.DictReader(file.split('\n'), dialect=dialect)
     fieldnames = reader.fieldnames
-    has_header = sniffer.has_header(file_obj)
-    if not uploaded_file:
-        if has_header:
-            # remove header line
-            line_num = sum(1 for line in file_obj.strip().split('\n')) - 1
-        else:
-            # if there is not header
-            line_num = sum(1 for line in file_obj.strip().split('\n'))
-        filename = filename[:-4]
-        file_info = FileDTO(name="{}{}".format(filename[:146], ".csv"),
-                            height=line_num,
-                            width=len(fieldnames))
-        return file_info
+    has_header = sniffer.has_header(file)
+    if has_header:
+        # remove header line
+        line_num = sum(1 for _ in file.strip().split('\n')) - 1
     else:
-        file_info = UploadFileDTO(name="{}{}".format(filename[:146], ".csv"),
-                                  column_names=fieldnames,
-                                  column_types=[check_type(v)
-                                                for v in next(reader).values()],
-                                  datarows=[next(reader) for v in range(21)])
-        return file_info
+        # if there is not header
+        line_num = sum(1 for _ in file.strip().split('\n'))
+    file_info = FileDTO(
+            name_info=filename,
+            tmpfile=get_tmpfilename(filepath),
+            height=line_num,
+            width=sum(1 for _ in fieldnames),
+            column_names=fieldnames,
+            column_types=[check_type(v) for v in next(reader).values()],
+            datarows=[next(reader) for _ in range(21)],
+    )
+    return file_info
 
 
-def save_dataset(file_uuid: UUID, dataset_info: FileDTO) -> DatasetDTO:
+def save_dataset(
+            tempfile: str,
+            column_names: List[str],
+            column_types: List[str]
+        ) -> DatasetDTO:
     """ Save new dataset to DB model """
+    orig_filename = recreate_filename(tempfile)
+    tempfilepath = get_tmpfilepath(tempfile)
+    file_info = read_csv(orig_filename, tempfilepath)
+    file_info.column_types = [ColumnType(t) for t in column_types]
+    file_info.column_names = column_names
     dataset = Dataset.objects.create(**dataset_info.dict())
     dataset_file = DatasetFile.objects.get(pk=file_uuid)
     dataset_file.dataset_id = dataset.id

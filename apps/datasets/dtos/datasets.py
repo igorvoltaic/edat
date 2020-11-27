@@ -5,6 +5,14 @@ from typing import Optional, List, Dict
 from uuid import UUID
 
 
+__all__ = [
+    'ColumnType',
+    'FileDTO',
+    'DatasetDTO',
+    'PageDTO'
+]
+
+
 class ColumnType(str, Enum):
     INT = "number"
     FLOAT = "float"
@@ -14,13 +22,10 @@ class ColumnType(str, Enum):
 
 
 class FileDTO(BaseModel):
-    name: str
+    name_info: str
+    tmpfile: str
     width: int
     height: int
-
-
-class UploadFileDTO(BaseModel):
-    name: str
     column_names: List[str] = ...
     column_types: List[ColumnType]
     datarows: List[Dict]
@@ -34,7 +39,7 @@ class DatasetDTO(BaseModel):
     width: int
     comment: str = ''
     file_id: Optional[UUID]
-    file_info: Optional[UploadFileDTO]
+    file_info: Optional[FileDTO]
 
     class Config:
         orm_mode = True

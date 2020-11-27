@@ -1,0 +1,28 @@
+@startuml
+actor User
+participant API
+database DB
+collections FS
+|||
+User -> API: Uploads .csv file
+API -> FS: Save .csv file into temp folder
+API --> User: Return parsed header specification and temp ID
+...
+User -> API: Temp ID and corrected version of dataset headers
+API -> FS: Read temp file
+FS --> API: Bytes file content
+API -> DB: Create Dataset model
+DB --> API: Newly created model
+API -> DB: Create DatasetFile model
+DB --> API: Newly created model
+|||
+loop each column
+    API -> DB: Create DatasetColumn model
+    DB --> API: Newly created model
+    |||
+end
+API -> FS: Copy source file to MEDIA folder
+API -> FS: Remove temp folder
+API --> User: Return Dataset dto
+|||
+@enduml

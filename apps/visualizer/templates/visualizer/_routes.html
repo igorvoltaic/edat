@@ -10,7 +10,8 @@
     const navLinks = [
             { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js")},
             { name: 'logout', meta: 'Log Out', path: "{% url 'logout' %}", component: {created: function () {window.location.replace('/logout')}} },
-            { name: 'dataset', path: '/api/datasets/:id', component: () => import(staticFiles + "vue/dataset-visualizer.js") },
+            { name: 'dataset', path: '/api/datasets/:id', component: () => import(staticFiles + "vue/dataset-editor.js") },
+            { name: 'editor', path: '/editor', component: () => import(staticFiles + "vue/dataset-editor.js"), props: true },
 
     ]
 
@@ -20,7 +21,8 @@
             { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js") },
             { name: 'login', meta: 'Log In', path: "{% url 'login' %}", component: () => import(staticFiles + "vue/login.js") },
             { name: 'register', meta: 'Register', path: "{% url 'register' %}", component: () => import(staticFiles + "vue/register.js") },
-            { name: 'dataset', path: '/api/dataset/:id', component: () => import(staticFiles + "vue/dataset-visualizer.js") },
+            { name: 'dataset', path: '/api/dataset/:id', component: () => import(staticFiles + "vue/dataset-editor.js") },
+            { name: 'editor', path: '/editor', component: () => import(staticFiles + "vue/dataset-editor.js"), props: true },
     ]
 
     {% endif %}

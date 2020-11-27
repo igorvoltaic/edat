@@ -1,6 +1,6 @@
 export default {
-    name: 'dataset-visualizer-datarow',
-    template: '#dataset-visualizer-datarow-template',
+    name: 'dataset-editor-datarow',
+    template: '#dataset-editor-datarow-template',
     delimiters: ['[[',']]'],
     props: ['data'],
     components: {

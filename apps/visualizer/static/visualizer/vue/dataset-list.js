@@ -31,31 +31,36 @@ export default {
                 searchString = '&q=' + document.querySelector('#search').value
             }
             fetch(`/api/datasets?page=${p}${searchString}`)
-                .then(response => response.json())
-                .then(result => {
-                    this.datasets = result.datasets;
-                    this.hasNext = result.has_next;
-                    this.hasPrev = result.has_prev;
-                    this.numPages = result.num_pages;
-                    this.pageNum = result.page_num;
-                });
+            .then(response => response.json())
+            .then(result => {
+                this.datasets = result.datasets;
+                this.hasNext = result.has_next;
+                this.hasPrev = result.has_prev;
+                this.numPages = result.num_pages;
+                this.pageNum = result.page_num;
+            });
         },
-        showFilename: function () {
+        addFilename: function () {
             const fileInput = document.querySelector('#upload-csv-file')
             document.querySelector("#upload-csv-file-label").innerHTML = fileInput.files[0].name
         },
         addDataset: function() {
             var data = new FormData()
-            const fileInput = document.querySelector('#upload-csv-file')
-            data.append('file', fileInput.files[0])
+            const fileInput = document.querySelector('#upload-csv-file');
+            data.append('file', fileInput.files[0]);
             fetch('/api/datasets', {
                 method: 'POST',
                 body: data,
             })
-                .then(response => response.json())
-                .then(result => {
-                    this.fetchDatasets("1")
+            .then(response => response.json())
+            .then(result => {
+                router.push({
+                    name: 'editor',
+                    params: {
+                        result: result
+                    }
                 });
+            });
 
             // Prevent default submission
             return false;

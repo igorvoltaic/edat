@@ -1,10 +1,11 @@
-from typing import List
 from fastapi import APIRouter, HTTPException, File, UploadFile
 
 from apps.datasets.services import get_all_datasets, get_dataset, \
                                    read_csv, handle_uploaded_file, \
                                    save_dataset, delete_dataset
-from apps.datasets.dtos import DatasetDTO, PageDTO
+from apps.datasets.dtos import DatasetDTO, PageDTO, FileDTO
+
+from helpers.recreate_filename import recreate_filename
 
 
 api_router = APIRouter()
@@ -26,15 +27,24 @@ def read(dataset_id: int):
     return dataset
 
 
-@api_router.post("/datasets", response_model=DatasetDTO)
-def create_item(file: UploadFile = File(...)):
-    if not file.filename.split('.')[-1] == "csv" \
-            or not file.content_type == "text/csv":
+@api_router.post("/datasets", response_model=FileDTO)
+def upload_dataset_file(file: UploadFile = File(...)):
+    if file.filename.split('.')[-1] != "csv" \
+            or file.content_type != "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
-    file_uuid = handle_uploaded_file(file.file)
-    file_info = read_csv(file.filename, file_uuid, uploaded_file=False)
-    dataset = save_dataset(file_uuid, file_info)
-    return dataset
+    tempfile = handle_uploaded_file(file.filename, file.file.read())
+    file_info = read_csv(file.filename, tempfile)
+    return file_info
+
+
+# @api_router.post("/save_dataset", response_model=DatasetDTO)
+# def save_dataset(
+#         tmpfile: str,
+#         column_names: List[str] = Form(...),
+#         column_types: List[str] = Form(...),
+#         ):
+#     dataset = save_dataset(tmpfile, column_names, column_types)
+#     pass
 
 
 @api_router.delete("/datasets/{dataset_id}", response_model=DatasetDTO)

@@ -1,13 +1,19 @@
 {% load static %}
 
-{% block dataset-visualizer %}
+{% block dataset_editor %}
 
 
 {# Vue templates #}
 
-<script type="text/x-template" id="dataset-visualizer-template">
+<script type="text/x-template" id="dataset-editor-template">
     <div id="home-container" class="ui container">
-        <h1>[[ dataset.name ]]</h1>
+        <div class="dataset-editor-header">
+            <h1>[[ name_info ]]</h1>
+            <div>
+                <button @click="" class="ui button green">Save</button>
+                <button @click="" class="ui button gray">Cancel</button>
+            </div>
+        </div>
 		<div id="data-table" class="ui container">
 			<table class="ui celled striped table">
 				<thead>
@@ -16,8 +22,8 @@
                          class="center aligned">[[ column_name ]]</th> 
 					</tr> 
                     <tr>
-						<th v-for="column_type in column_types" class="type-dropdown-cell center aligned">
-                            <select class="type-dropdown" name="column_types" id="column_types">
+						<th v-for="column_type, index in column_types" class="type-dropdown-cell center aligned">
+                            <select @change="onChangeType($event, index)" class="type-dropdown" name="column_types" id="column_types">
                                 <option
                                  v-for="type in datatypes" 
                                  :value="type"
@@ -28,16 +34,16 @@
 					</tr> 
 				</thead>
 			    <tbody>
-                    <dataset-visualizer-datarow
+                    <dataset-editor-datarow
                      v-for="row in rows" :key="row.index" :data="row">
-					</dataset-visualizer-datarow>
+					</dataset-editor-datarow>
 			  </tbody>
 			</table>
 		</div>
     </div>
 </script>
 
-<script type="text/x-template" id="dataset-visualizer-datarow-template">
+<script type="text/x-template" id="dataset-editor-datarow-template">
     <tr>
 		<td v-for="d in data" class="center aligned">[[ d ]]</td> 
     </tr>
