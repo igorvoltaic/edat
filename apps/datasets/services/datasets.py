@@ -2,8 +2,7 @@ import os
 import csv
 import datetime
 
-from typing import Optional, List
-from uuid import UUID
+from typing import Optional
 from dateutil.parser import parse as dateparse
 
 from django.core.paginator import Paginator
@@ -97,11 +96,10 @@ def read_csv(filename: str, filepath: str,) -> FileDTO:
     return file_info
 
 
-def save_dataset(file_info: FileDTO) -> DatasetDTO:
+def create_new_dataset(file_info: FileDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
-    orig_filename = recreate_filename(tempfile)
+    orig_filename = get_tmpfilename(tempfile)
     tempfilepath = get_tmpfilepath(tempfile)
-    file_info = read_csv(orig_filename, tempfilepath)
     file_info.column_types = [ColumnType(t) for t in column_types]
     file_info.column_names = column_names
     dataset = Dataset.objects.create(**dataset_info.dict())
