@@ -5,6 +5,7 @@ import datetime
 from typing import Optional
 from dateutil.parser import parse as dateparse
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Q
 
@@ -12,7 +13,6 @@ from apps.datasets.dtos import DatasetDTO, FileDTO, ColumnType, PageDTO
 from apps.datasets.models import Dataset, DatasetFile
 
 from helpers.create_temporary_file import create_temporary_file
-from helpers.get_tmpfilepath import get_tmpfilepath
 from helpers.get_file_id import get_file_id
 
 
@@ -32,19 +32,19 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
         dataset = Dataset.objects.get(pk=dataset_id)
         dto = DatasetDTO.from_orm(dataset)
         dto.file_id = dataset.file.id
-    except Dataset.DoesNotExist:
+    except ObjectDoesNotExist:
         return None
     return dto
 
 
-def get_all_datasets(page_num: int, q: str = None) -> PageDTO:
+def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
     """ Get all datasets from the DB """
-    if not q:
+    if not query:
         datasets = Dataset.objects.order_by("-timestamp")
     else:
         datasets = Dataset.objects.filter(
-                Q(name__icontains=q) |
-                Q(comment__icontains=q)
+                Q(name__icontains=query) |
+                Q(comment__icontains=query)
         )
     paginator = Paginator(datasets, 7)
     if not page_num:
@@ -68,7 +68,7 @@ def handle_uploaded_file(filename: str, file: bytes) -> FileDTO:
     return file_info
 
 
-def read_csv(filename: str, filepath: str,) -> FileDTO:
+def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
@@ -85,8 +85,8 @@ def read_csv(filename: str, filepath: str,) -> FileDTO:
         # if there is not header
         line_num = sum(1 for _ in file.strip().split('\n'))
     file_info = FileDTO(
-            name_info=filename,
-            tmpfile=get_tmpfilename(filepath),
+            filename=filename,
+            file_id=file_id,
             height=line_num,
             width=sum(1 for _ in fieldnames),
             column_names=fieldnames,
@@ -98,8 +98,6 @@ def read_csv(filename: str, filepath: str,) -> FileDTO:
 
 def create_new_dataset(file_info: FileDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
-    orig_filename = get_tmpfilename(tempfile)
-    tempfilepath = get_tmpfilepath(tempfile)
     file_info.column_types = [ColumnType(t) for t in column_types]
     file_info.column_names = column_names
     dataset = Dataset.objects.create(**dataset_info.dict())
@@ -142,6 +140,6 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:
             if os.path.isfile(dataset.file.upload.path):
                 os.remove(dataset.file.upload.path)
         dataset.delete()
-    except Dataset.DoesNotExist:
+    except ObjectDoesNotExist:
         return None
     return DatasetDTO.from_orm(dataset)

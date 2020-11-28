@@ -57,8 +57,8 @@ export default {
                 router.push({
                     name: 'editor',
                     params: {
-                        result: result
-                    }
+                        result: result,
+                    },
                 });
             });
 

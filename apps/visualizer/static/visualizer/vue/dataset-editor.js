@@ -8,8 +8,8 @@ export default {
     props: ['result'],
     data() {
         return {
-            name_info: this.result.name_info,
-            tmpfile: this.result.tmpfile,
+            filename: this.result.filename,
+            file_id: this.result.file_id,
             column_names: this.result.column_names,
             column_types: this.result.column_types,
             datatypes: ['number', 'float', 'datetime', 'boolean', 'string'],
@@ -36,15 +36,17 @@ export default {
             event.preventDefault()
             event.returnValue = ""
         },
+
         onChangeType: function(event, index) {
             this.column_types[index] = event.target.value;
         },
+
         onSave: function() {
             fetch('/api/save_dataset', {
                 method: 'POST',
                 body: JSON.stringify({
-                    name_info: this.name_info
-                    tmpfile: this.tmpfile,
+                    name_info: this.filename,
+                    tmpfile: this.file_id,
                     column_names: this.column_names,
                     column_types: this.column_types,
                     rows: this.rows,
