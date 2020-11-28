@@ -1,9 +1,0 @@
-{
-  "python.linting.pylintEnabled": true,
-  "python.linting.flake8Enabled": false,
-  "python.linting.pyrightEnabled": false,
-  "python.linting.pylintArgs": ["--load-plugins", "pylint_django"],
-  "python.linting.enabled": true,
-  "python.linting.mypyEnabled": false,
-  "diagnostic.displayByAle": true
-}
