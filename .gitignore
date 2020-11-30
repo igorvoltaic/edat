@@ -12,6 +12,9 @@
 ### User-Defined files ###
 *.csv
 tmpdir/*
+media/*
+*.bak
+*$~
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

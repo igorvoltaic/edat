@@ -1,4 +1,5 @@
-from uuid import uuid4
+""" Dataset app models layer
+"""
 from django.db import models
 
 
@@ -9,13 +10,16 @@ class Dataset(models.Model):
     height = models.IntegerField()
     width = models.IntegerField()
     comment = models.CharField(max_length=255, blank=True)
-    file = models.FileField(upload_to='apps/datasets/uploads')
+    file = models.FileField(null=True)
 
 
 class Column(models.Model):
     """ Column datatypes, names and indexes associated with dataset """
-    dataset= models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name="columns")
+    dataset = models.ForeignKey(
+        Dataset,
+        on_delete=models.CASCADE,
+        related_name="columns"
+    )
     index = models.IntegerField()
     name = models.CharField(max_length=50, blank=True)
     datatype = models.CharField(max_length=50, blank=True)
-

@@ -8,12 +8,15 @@ export default {
     props: ['result'],
     data() {
         return {
-            filename: this.result.filename,
+            filename: this.result.name,
             file_id: this.result.file_id,
+            width: this.result.width,
+            height: this.result.height,
             column_names: this.result.column_names,
             column_types: this.result.column_types,
             datatypes: ['number', 'float', 'datetime', 'boolean', 'string'],
             rows: this.result.datarows,
+            edit: false,
         }
     },
 
@@ -25,8 +28,10 @@ export default {
     },
 
     beforeRouteLeave(to, from, next) {
-        if (!window.confirm("Leave without saving?")) {
-            return;
+        if (!this.edit) {
+            if (!window.confirm("Leave without saving?")) {
+                return;
+            }
         }
         next();
     },
@@ -42,24 +47,37 @@ export default {
         },
 
         onSave: function() {
-            fetch('/api/save_dataset', {
+            this.edit = true;
+            fetch('/api/save', {
                 method: 'POST',
                 body: JSON.stringify({
-                    name_info: this.filename,
-                    tmpfile: this.file_id,
+                    name: this.filename,
+                    file_id: this.file_id,
+                    width: this.width,
+                    height: this.height,
                     column_names: this.column_names,
                     column_types: this.column_types,
-                    rows: this.rows,
+                    datarows: this.rows
                 })
             })
             .then(response => response.json())
             .then(result => {
-                // router.push({
-                //     name: 'home',
-                // });
+                router.push({
+                    name: 'home',
+                });
             });
         },
         onCancel: function() {
+            this.edit = true;
+            fetch(`/api/editor/${this.file_id}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(result => {
+                router.push({
+                    name: 'home',
+                });
+            })
 
         }
     },

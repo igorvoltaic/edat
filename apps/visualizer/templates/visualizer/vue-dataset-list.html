@@ -45,8 +45,8 @@
 			  </tbody>
 			</table>
             <div class="ui pagination menu">
-                <a v-for="n in numPages" @click="fetchDatasets(n)" class="item" :class="{active: isActivePage(n)}">
-                    [[ n ]]
+                <a v-for="num in numPages" @click="fetchDatasets(num)" class="item" :class="{active: isActivePage(num)}">
+                    [[ num ]]
                 </a>
             </div>
 		</div>

@@ -28,7 +28,7 @@ export default {
         fetchDatasets: function (p, q = false) {
             let searchString = ''
             if (q) {
-                searchString = '&q=' + document.querySelector('#search').value
+                searchString = '&query=' + document.querySelector('#search').value
             }
             fetch(`/api/datasets?page=${p}${searchString}`)
             .then(response => response.json())

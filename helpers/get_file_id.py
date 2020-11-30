@@ -1,6 +1,8 @@
+""" Helper to create uniq uiid for a tempfile
+"""
 import uuid
 
 
 def get_file_id() -> str:
-    """ Create a uniq temp file id """
+    """ Return new uuid as a string """
     return str(uuid.uuid4())
