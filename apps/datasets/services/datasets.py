@@ -1,17 +1,14 @@
-import os
 import csv
 import datetime
-
+import os
 from typing import Optional
-from dateutil.parser import parse as dateparse
 
-from django.core.exceptions import ObjectDoesNotExist
+from dateutil.parser import parse as dateparse
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from apps.datasets.dtos import DatasetDTO, FileDTO, ColumnType, PageDTO
+from apps.datasets.dtos import ColumnType, DatasetDTO, FileDTO, PageDTO
 from apps.datasets.models import Dataset, DatasetFile
-
 from helpers.create_temporary_file import create_temporary_file
 from helpers.get_file_id import get_file_id
 
@@ -32,7 +29,7 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
         dataset = Dataset.objects.get(pk=dataset_id)
         dto = DatasetDTO.from_orm(dataset)
         dto.file_id = dataset.file.id
-    except ObjectDoesNotExist:
+    except Dataset.DoesNotExist:
         return None
     return dto
 
@@ -98,12 +95,7 @@ def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
 
 def create_new_dataset(file_info: FileDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
-    file_info.column_types = [ColumnType(t) for t in column_types]
-    file_info.column_names = column_names
-    dataset = Dataset.objects.create(**dataset_info.dict())
-    dataset_file = DatasetFile.objects.get(pk=file_uuid)
-    dataset_file.dataset_id = dataset.id
-    dataset_file.save()
+    dataset = Dataset.objects.create(**file_info.dict())
     return DatasetDTO.from_orm(dataset)
 
 
@@ -140,6 +132,6 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:
             if os.path.isfile(dataset.file.upload.path):
                 os.remove(dataset.file.upload.path)
         dataset.delete()
-    except ObjectDoesNotExist:
+    except Dataset.DoesNotExist:
         return None
     return DatasetDTO.from_orm(dataset)
