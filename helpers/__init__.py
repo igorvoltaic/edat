@@ -4,3 +4,5 @@ from .move_tmpfile_to_media import move_tmpfile_to_media
 from .get_tmpfilepath import get_tmpfilepath
 from .is_new_file import is_new_file
 from .sample_rows_count import sample_rows_count
+from .count_lines import count_lines
+from .examine_csv import examine_csv
