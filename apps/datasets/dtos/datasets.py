@@ -2,7 +2,6 @@
 """
 from enum import Enum
 from typing import Optional, List, Dict
-from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, Field
 
@@ -27,7 +26,6 @@ class ColumnType(str, Enum):
 class DatasetInfoDTO(BaseModel):
     """ transfer object for dataset file information """
     name: str
-    timestamp: Optional[datetime] = Field(...)
     comment: Optional[str]
     width: int
     height: int
@@ -43,6 +41,7 @@ class CreateDatasetDTO(DatasetInfoDTO):
 class DatasetDTO(DatasetInfoDTO):
     """ transfer object for dataset db models """
     id: int
+    timestamp: Optional[datetime] = Field(...)
 
     class Config:
         orm_mode = True

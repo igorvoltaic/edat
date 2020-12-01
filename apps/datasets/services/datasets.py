@@ -22,18 +22,7 @@ __all__ = [
 ]
 
 
-def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
-    """ Get selected dataset from the DB model """
-    try:
-        dataset = Dataset.objects.get(pk=dataset_id)
-        dto = DatasetDTO.from_orm(dataset)
-        dto.file_id = dataset.file.id
-    except Dataset.DoesNotExist:
-        return None
-    return dto
-
-
-def get_dataset_info(dataset_id: int) -> Optional[FileDTO]:
+def get_dataset(dataset_id: int) -> Optional[FileDTO]:
     """ Get dataset object and return its file info
         to let user edit column types
     """
