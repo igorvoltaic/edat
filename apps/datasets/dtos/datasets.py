@@ -7,10 +7,8 @@ from pydantic import BaseModel, Field
 
 
 __all__ = [
-    'ColumnType',
-    'DatasetInfoDTO',
-    'DatasetDTO',
-    'PageDTO'
+    'ColumnType', 'CreateDatasetDTO', 'DatasetDTO',
+    'DatasetInfoDTO', 'PageDTO'
 ]
 
 
@@ -24,17 +22,21 @@ class ColumnType(str, Enum):
 
 
 class DatasetInfoDTO(BaseModel):
-    """ transfer object for dataset file information """
+    """ transfer object for dataset's file information """
     name: str
     comment: Optional[str]
     width: int
     height: int
-    column_names: List[str] = Field(...)
-    column_types: List[ColumnType]
-    datarows: List[Dict]
+    column_names: Optional[List[str]]
+    column_types: Optional[List[ColumnType]]
+    datarows: Optional[List[Dict]]
+
+    class Config:
+        orm_mode = True
 
 
 class CreateDatasetDTO(DatasetInfoDTO):
+    """ transfer object for dataset create method """
     file_id: str
 
 

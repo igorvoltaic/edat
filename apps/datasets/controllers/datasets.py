@@ -4,10 +4,11 @@ from fastapi import APIRouter, HTTPException, File, UploadFile
 from fastapi.responses import JSONResponse
 
 from apps.datasets.services import get_all_datasets, get_dataset, \
-    handle_uploaded_file, get_dataset_info, \
-    save_dataset, delete_dataset, \
-    delete_tmpfile
-from apps.datasets.dtos import DatasetDTO, PageDTO, FileDTO
+    handle_uploaded_file, delete_tmpfile, edit_dataset, \
+    create_dataset, delete_dataset
+
+from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
+        DatasetInfoDTO
 
 api_router = APIRouter()
 
@@ -28,16 +29,16 @@ def read(dataset_id: int):
     return dataset
 
 
-@api_router.get("/edit/{dataset_id}", response_model=FileDTO)
-def edit_dataset_info(dataset_id: int):
+@api_router.put("/datasets/{dataset_id}", response_model=DatasetDTO)
+def edit_dataset_info(dataset_id: int, body: DatasetDTO):
     """ Edit dataset column types and comment """
-    file_info = get_dataset_info(dataset_id)
-    if not file_info:
+    dataset = edit_dataset(dataset_id, body)
+    if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
-    return file_info
+    return dataset
 
 
-@api_router.post("/datasets", response_model=FileDTO)
+@api_router.post("/datasets", response_model=CreateDatasetDTO)
 def upload_dataset_file(file: UploadFile = File(...)):
     """ Receive CSV file and """
     if file.filename.split('.')[-1] != "csv" \
@@ -47,18 +48,17 @@ def upload_dataset_file(file: UploadFile = File(...)):
     return file_info
 
 
-@api_router.post("/save", response_model=DatasetDTO)
-def save(file_info: FileDTO):
+@api_router.post("/create", response_model=DatasetDTO)
+def create(file_info: CreateDatasetDTO):
     """ Create new dataset DB entry and return dataset info """
-    dataset = save_dataset(file_info)
+    dataset = create_dataset(file_info)
     if not dataset:
-        raise HTTPException(status_code=422,
-                            detail="Was not able to save file")
+        raise HTTPException(status_code=422, detail="Dataset creation error")
     return dataset
 
 
-@api_router.delete("/datasets/{dataset_id}", response_model=DatasetDTO)
-def delete_item(dataset_id: int):
+@api_router.delete("/datasets/{dataset_id}", response_model=DatasetInfoDTO)
+def delete(dataset_id: int):
     """ Call delete service and return deleted dataset info """
     dataset = delete_dataset(dataset_id)
     if not dataset:
@@ -66,8 +66,8 @@ def delete_item(dataset_id: int):
     return dataset
 
 
-@api_router.delete("/editor/{file_id}", status_code=204)
-def delete_dataset_file(file_id: str):
+@api_router.delete("/create/{file_id}", status_code=204)
+def delete_temparary_file(file_id: str):
     """ Remove temporary dataset file and return file id """
     deleted_file_id = delete_tmpfile(file_id)
     if not deleted_file_id:

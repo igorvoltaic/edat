@@ -3,53 +3,59 @@
 import csv
 import datetime
 import os
+import shutil
 from typing import Optional
 
 from dateutil.parser import parse as dateparse
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from apps.datasets.dtos import ColumnType, DatasetDTO, FileDTO, PageDTO
+from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
+        DatasetInfoDTO, PageDTO
 from apps.datasets.models import Dataset, Column
 from helpers import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfilepath, count_lines, \
-        is_new_file, sample_rows_count, examine_csv
+        sample_rows_count, examine_csv, get_dir_path
 
 __all__ = [
     'get_dataset', 'get_all_datasets', 'read_csv',
-    'save_dataset', 'delete_dataset', 'handle_uploaded_file',
-    'get_dataset_info', 'delete_tmpfile'
+    'create_dataset', 'delete_dataset', 'handle_uploaded_file',
+    'delete_tmpfile', 'edit_dataset'
 ]
 
 
-def get_dataset(dataset_id: int) -> Optional[FileDTO]:
+def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     """ Get dataset object and return its file info
         to let user edit column types
     """
     try:
-        dataset = Dataset.objects.get(pk=dataset_id)
-        file_info = read_csv(dataset.name, dataset.id, dataset.file.name)
-        for index, _ in enumerate(zip(
+        dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
+        file_info = read_csv(dataset.name, dataset.file.name)
+        for index, _ in enumerate(zip(  # type: ignore
             file_info.column_names,
             file_info.column_types)
         ):
-            column = Column.objects.get(
+            column = Column.objects.get(  # type: ignore
                     dataset_id=dataset_id,
                     index=index
             )
             file_info.column_names[index] = column.name
             file_info.column_types[index] = column.datatype
-    except Dataset.DoesNotExist:
+    except Dataset.DoesNotExist:  # type: ignore
         return None
-    return file_info
+    return DatasetDTO(
+            **file_info.dict(),
+            id=dataset.id,
+            timestamp=dataset.timestamp
+        )
 
 
 def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
     """ Get all datasets from the DB """
     if not query:
-        datasets = Dataset.objects.order_by("-timestamp")
+        datasets = Dataset.objects.order_by("-timestamp")  # type: ignore
     else:
-        datasets = Dataset.objects.filter(
+        datasets = Dataset.objects.filter(  # type: ignore
                 Q(name__icontains=query) |
                 Q(comment__icontains=query)
         )
@@ -67,15 +73,16 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
     return page_data
 
 
-def handle_uploaded_file(filename: str, file: bytes) -> FileDTO:
+def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
     """ Save file to Django's default temporary file location """
     file_id = get_file_id()
     tempfile = create_temporary_file(filename, file_id, file)
-    file_info = read_csv(filename, file_id, tempfile)
-    return file_info
+    file_info = read_csv(filename, tempfile)
+    create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
+    return create_dto
 
 
-def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
+def read_csv(filename: str, filepath: str,) -> DatasetInfoDTO:
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
@@ -85,13 +92,10 @@ def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
     fieldnames = reader.fieldnames
     line_num = count_lines(file, has_header)
     rows_to_read = sample_rows_count(line_num)
-    file_info = FileDTO(
+    file_info = DatasetInfoDTO(
         name=filename,
-        file_id=file_id,
         height=line_num,
         width=sum(1 for _ in fieldnames),
-        columns={
-            },
         column_names=fieldnames,
         column_types=[check_type(v) for v in next(reader).values()],
         datarows=[next(reader) for _ in range(rows_to_read)],
@@ -99,41 +103,34 @@ def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
     return file_info
 
 
-def edit_dataset(file_info: FileDTO) -> Optional[DatasetDTO]:
+def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
     """ Edit dataset Column DB models """
     try:
-        dataset = Dataset.objects.get(pk=file_info.file_id)
-    except Dataset.DoesNotExist:
+        dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
+    except Dataset.DoesNotExist:  # type: ignore
         return None
-    for index, data in enumerate(zip(
-        file_info.column_names,
-        file_info.column_types)
-    ):
-        column = Column.objects.get(
-                dataset_id=file_info.file_id,
+    for index, type in enumerate(dto.column_types):  # type: ignore
+        column = Column.objects.get(  # type: ignore
+                dataset_id=dataset.id,
                 index=index
         )
-        column.name = data[0]
-        column.datatype = data[1]
+        column.datatype = type
         column.save()
-    return DatasetDTO.from_orm(dataset)
+    return dto
 
 
-def save_dataset(file_info: FileDTO) -> Optional[DatasetDTO]:
+def create_dataset(file_info: CreateDatasetDTO) -> DatasetDTO:
     """ Save new dataset to DB model """
-    if not is_new_file(file_info.file_id):
-        dataset = edit_dataset(file_info)
-        return dataset
-    dataset = Dataset.objects.create(
+    dataset = Dataset.objects.create(  # type: ignore
             name=file_info.name,
             height=file_info.height,
             width=file_info.width,
     )
-    for index, data in enumerate(zip(
+    for index, data in enumerate(zip(  # type: ignore
         file_info.column_names,
         file_info.column_types)
     ):
-        Column.objects.create(
+        Column.objects.create(  # type: ignore
                 dataset=dataset,
                 index=index,
                 name=data[0],
@@ -142,31 +139,38 @@ def save_dataset(file_info: FileDTO) -> Optional[DatasetDTO]:
     file = move_tmpfile_to_media(file_info.file_id)
     dataset.file = file
     dataset.save()
-    return DatasetDTO.from_orm(dataset)
+    return DatasetDTO(
+            id=dataset.id,
+            name=dataset.name,
+            timestamp=dataset.timestamp,
+            width=dataset.width,
+            height=dataset.height,
+            column_names=file_info.column_names,
+            column_types=file_info.column_types,
+        )
 
 
-def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:
+def delete_dataset(dataset_id: int) -> Optional[DatasetInfoDTO]:
     """ Delete selected dataset """
     try:
-        dataset = Dataset.objects.get(pk=dataset_id)
+        dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
         if dataset.file:
             if os.path.isfile(dataset.file.name):
-                os.remove(dataset.file.name)
+                file_dir = get_dir_path(dataset.file.name)
+                shutil.rmtree(file_dir)
         dataset.delete()
-    except Dataset.DoesNotExist:
+    except Dataset.DoesNotExist:  # type: ignore
         return None
-    return DatasetDTO.from_orm(dataset)
+    return DatasetInfoDTO.from_orm(dataset)
 
 
 def delete_tmpfile(file_id: str) -> Optional[str]:
     """ Delete tempfile """
-    if is_new_file(file_id):
-        try:
-            tmpfile = get_tmpfilepath(file_id)
-            os.remove(tmpfile)
-        except IndexError:
-            return None
-    return file_id
+    tmp_file_dir = get_tmpfilepath(file_id)
+    if tmp_file_dir:
+        shutil.rmtree(tmp_file_dir)
+        return file_id
+    return None
 
 
 def check_type(str_value: str) -> ColumnType:

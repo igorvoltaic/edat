@@ -58,6 +58,7 @@ export default {
                     name: 'editor',
                     params: {
                         result: result,
+                        new_dataset: true,
                     },
                 });
             });

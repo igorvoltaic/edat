@@ -38,13 +38,14 @@ export default {
         editDataset: function(event) {
             event.preventDefault();
             event.stopPropagation();
-            fetch(`/api/edit/${this.dataset.id}`)
+            fetch(`/api/datasets/${this.dataset.id}`)
             .then(response => response.json())
             .then(result => {
                 router.push({
                     name: 'editor',
                     params: {
                         result: result,
+                        new_dataset: false,
                     },
                 });
             });
