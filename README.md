@@ -26,6 +26,8 @@ The Django app is available at `/` (e.g. `http://localhost:8000/django/admin/`)
 The FastAPI app is is available at `/api` (e.g. `http://localhost:8000/api/datasets/`)
 
 
-### Liters
+### Code correctness
 
-Code have been checked using `pyright`
+Linters: `Pyright`, `Pylint`, `Flake8`
+Static Type-checking: `Pyright`, `mypy`
+Formatters: `autopep8`, `yapf`
