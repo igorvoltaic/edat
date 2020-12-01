@@ -91,9 +91,7 @@ def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
         from the file to determine datatypes
     """
     file = open(filepath, 'r').read()
-    sniffer = csv.Sniffer()
-    dialect = sniffer.sniff(file)
-    has_header = sniffer.has_header(file)
+    dialect, has_header = examine_csv(file)
     reader = csv.DictReader(file.split('\n'), dialect=dialect)
     fieldnames = reader.fieldnames
     line_num = count_lines(file, has_header)
