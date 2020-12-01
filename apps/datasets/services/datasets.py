@@ -11,11 +11,9 @@ from django.db.models import Q
 
 from apps.datasets.dtos import ColumnType, DatasetDTO, FileDTO, PageDTO
 from apps.datasets.models import Dataset, Column
-from helpers.create_temporary_file import create_temporary_file
-from helpers.get_file_id import get_file_id
-from helpers.move_tmpfile_to_media import move_tmpfile_to_media
-from helpers.get_tmpfilepath import get_tmpfilepath
-from helpers.is_new_file import is_new_file
+from helpers import create_temporary_file, get_file_id, \
+        move_tmpfile_to_media, get_tmpfilepath, \
+        is_new_file, sample_rows_count
 
 __all__ = [
     'get_dataset', 'get_all_datasets', 'read_csv',
@@ -104,6 +102,7 @@ def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
     else:
         # if there is not header
         line_num = sum(1 for _ in file.strip().split('\n'))
+    rows = sample_rows_count(line_num)
     file_info = FileDTO(
         name=filename,
         file_id=file_id,
@@ -113,7 +112,7 @@ def read_csv(filename: str, file_id: str, filepath: str,) -> FileDTO:
             },
         column_names=fieldnames,
         column_types=[check_type(v) for v in next(reader).values()],
-        datarows=[next(reader) for _ in range(21)],
+        datarows=[next(reader) for _ in range(rows)],
     )
     return file_info
 
@@ -169,8 +168,8 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     try:
         dataset = Dataset.objects.get(pk=dataset_id)
         if dataset.file:
-            if os.path.isfile(dataset.file.upload.path):
-                os.remove(dataset.file.upload.path)
+            if os.path.isfile(dataset.file.name):
+                os.remove(dataset.file.name)
         dataset.delete()
     except Dataset.DoesNotExist:
         return None
