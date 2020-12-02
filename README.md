@@ -6,8 +6,11 @@ This is a tool for dataset visualization using Seabourne running on FastAPI with
 
 ```
 git clone https://github.com/igorvoltaic/edat
-pip install -r requirements.txt
 cd edat/
+python -m venv venv
+./venv/bin/activate
+pip install -r requirements.txt
+echo "SECRET_KEY=$(python manage.py shell -c 'from django.core.management import utils; print(utils.get_random_secret_key())')" > .env
 ./manage.py migrate
 ./manage.py createsuperuser 
 ```
@@ -15,7 +18,7 @@ cd edat/
 ## Running
 
 ```
-uvicorn project.asgi:app --debug
+uvicorn base.asgi:app --debug
 ```
 An OS tool should be set to crean `tmpdir/` once a day/hour in case there were interrupted used sessions
 
