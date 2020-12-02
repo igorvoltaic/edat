@@ -7,6 +7,8 @@ import os
 from django.apps import apps
 from django.conf import settings
 from django.core.wsgi import get_wsgi_application
+from helpers import create_tmpdir
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'base.settings')
 apps.populate(settings.INSTALLED_APPS)
@@ -29,6 +31,7 @@ def get_application() -> FastAPI:
     )
     app.include_router(api_router, prefix="/api")
     app.mount("/", WSGIMiddleware(get_wsgi_application()))
+    create_tmpdir()
 
     return app
 
