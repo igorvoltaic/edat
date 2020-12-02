@@ -9,6 +9,7 @@ from typing import Optional
 from dateutil.parser import parse as dateparse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.conf import settings
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO
@@ -59,7 +60,7 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
                 Q(name__icontains=query) |
                 Q(comment__icontains=query)
         )
-    paginator = Paginator(datasets, 7)
+    paginator = Paginator(datasets, settings.ITEMS_PER_PAGE)
     if not page_num:
         page_num = 1
     page = paginator.get_page(page_num)
@@ -119,7 +120,7 @@ def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
     return dto
 
 
-def create_dataset(file_info: CreateDatasetDTO) -> DatasetDTO:
+def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
     """ Save new dataset to DB model """
     dataset = Dataset.objects.create(  # type: ignore
             name=file_info.name,
@@ -137,6 +138,8 @@ def create_dataset(file_info: CreateDatasetDTO) -> DatasetDTO:
                 datatype=data[1],
             )
     file = move_tmpfile_to_media(file_info.file_id)
+    if not file:
+        return None
     dataset.file = file
     dataset.save()
     return DatasetDTO(
@@ -154,11 +157,11 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetInfoDTO]:
     """ Delete selected dataset """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
+        dataset.delete()
         if dataset.file:
             if os.path.isfile(dataset.file.name):
                 file_dir = get_dir_path(dataset.file.name)
                 shutil.rmtree(file_dir)
-        dataset.delete()
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return DatasetInfoDTO.from_orm(dataset)
