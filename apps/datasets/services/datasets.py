@@ -8,6 +8,7 @@ from typing import Optional
 
 from dateutil.parser import parse as dateparse
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 
@@ -120,6 +121,7 @@ def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
     return dto
 
 
+@transaction.atomic
 def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
     """ Save new dataset to DB model """
     dataset = Dataset.objects.create(  # type: ignore
@@ -153,6 +155,7 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
         )
 
 
+@transaction.atomic
 def delete_dataset(dataset_id: int) -> Optional[DatasetInfoDTO]:
     """ Delete selected dataset """
     try:
