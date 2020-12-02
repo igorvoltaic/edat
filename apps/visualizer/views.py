@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -26,9 +26,9 @@ def login_view(request):
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
-        return HttpResponseRedirect(settings.LOGIN_URL)
-        # todo: login failed message. something like redirect
-        # to '/#/login/failed' with additional prop to show the message
+        return render(request, "visualizer/index.html", {
+            "auth_fail_message": "Invalid username and/or password."
+        })
     else:
         return render(request, "visualizer/index.html")
 
@@ -47,8 +47,8 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "visualizer/register.html", {
-                "message": "Passwords must match."
+            return render(request, "visualizer/index.html", {
+                "register_fail_message": "Passwords must match."
             })
 
         # Attempt to create new user
@@ -57,7 +57,7 @@ def register(request):
             user.save()
         except IntegrityError:
             return render(request, "visualizer/index.html", {
-                "message": "Username already taken."
+                "register_fail_message": "Username already taken."
             })
         login(request, user)
         return HttpResponseRedirect(reverse("index"))

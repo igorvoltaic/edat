@@ -8,8 +8,8 @@
 <script type="text/x-template" id="login-template">
     <section class="ui raised very padded text container segment teal">
             <h2 class="ui header">Login</h2>
-            {% if message %}
-                <div>{{ message }}</div>
+            {% if auth_fail_message %}
+                <div>{{ auth_fail_message }}</div>
             {% endif %}
 
             <form class="ui form segment " action="{% url 'login' %}" method="post">

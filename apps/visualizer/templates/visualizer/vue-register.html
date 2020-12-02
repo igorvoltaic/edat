@@ -8,8 +8,8 @@
     <section class="ui raised very padded text container segment teal">
             <h2 class="ui header">Register</h2>
 
-            {% if message %}
-                <div>{{ message }}</div>
+            {% if register_fail_message %}
+                <div>{{ register_fail_message }}</div>
             {% endif %}
 
             <form class="ui form segment" action="{% url 'register' %}" method="post">
@@ -26,7 +26,7 @@
                 <div class="input field">
                     <input type="password" name="confirmation" placeholder="Confirm Password">
                 </div>
-                <button class="ui button teal" type="submit" value="Register">Login</button>
+                <button class="ui button teal" type="submit" value="Register">Register</button>
                 <p>
                     Already have an account? <router-link :to="{ name: 'login' }">Log In here.</router-link>
                 </p>
