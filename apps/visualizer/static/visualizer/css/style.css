@@ -8,6 +8,11 @@
   margin: 0;
 }
 
+#editor-comment {
+  margin-bottom: 1em;
+  width: 50%;
+}
+
 div#site-header.item {
   padding-right: 0 !important;
 }

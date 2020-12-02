@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -7,6 +9,7 @@ from django.urls import reverse
 from .models import User
 
 
+@login_required
 def index(request):
     return render(request, "visualizer/index.html")
 
@@ -23,12 +26,11 @@ def login_view(request):
         if user is not None:
             login(request, user)
             return HttpResponseRedirect(reverse("index"))
-        else:
-            return HttpResponseRedirect("/#/login")  # redirect to vue route
-            # TODO: login failed message. something like redirect
-            # to '/#/login/failed' with additional prop to show the message
+        return HttpResponseRedirect(settings.LOGIN_URL)
+        # todo: login failed message. something like redirect
+        # to '/#/login/failed' with additional prop to show the message
     else:
-        return render(request, "visualizer/login.html")
+        return render(request, "visualizer/index.html")
 
 
 def logout_view(request):
@@ -54,11 +56,10 @@ def register(request):
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return HttpResponseRedirect("/#/register")  # redirect to vue route
-            # TODO: login failed message. something like redirect to
-            # '/#/register/failed' with additional prop to
-            # show the message "Username already taken."
+            return render(request, "visualizer/index.html", {
+                "message": "Username already taken."
+            })
         login(request, user)
         return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "visualizer/register.html")
+        return render(request, "visualizer/index.html")

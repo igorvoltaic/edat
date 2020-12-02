@@ -33,6 +33,7 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
         file_info = read_csv(dataset.name, dataset.file.name)
+        file_info.comment = dataset.comment
         for index, _ in enumerate(zip(  # type: ignore
             file_info.column_names,
             file_info.column_types)
@@ -48,7 +49,7 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     return DatasetDTO(
             **file_info.dict(),
             id=dataset.id,
-            timestamp=dataset.timestamp
+            timestamp=dataset.timestamp,
         )
 
 
@@ -105,19 +106,22 @@ def read_csv(filename: str, filepath: str,) -> DatasetInfoDTO:
     return file_info
 
 
+@transaction.atomic
 def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
     """ Edit dataset Column DB models """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
     except Dataset.DoesNotExist:  # type: ignore
         return None
-    for index, type in enumerate(dto.column_types):  # type: ignore
+    for index, col_type in enumerate(dto.column_types):  # type: ignore
         column = Column.objects.get(  # type: ignore
                 dataset_id=dataset.id,
                 index=index
         )
-        column.datatype = type
+        column.datatype = col_type
         column.save()
+    dataset.comment = dto.comment
+    dataset.save()
     return dto
 
 
@@ -128,6 +132,7 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
             name=file_info.name,
             height=file_info.height,
             width=file_info.width,
+            comment=file_info.comment
     )
     for index, data in enumerate(zip(  # type: ignore
         file_info.column_names,
@@ -150,6 +155,7 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
             timestamp=dataset.timestamp,
             width=dataset.width,
             height=dataset.height,
+            comment=dataset.comment,
             column_names=file_info.column_names,
             column_types=file_info.column_types,
         )

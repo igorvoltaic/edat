@@ -16,6 +16,7 @@ export default {
             height: this.result.height,
             column_names: this.result.column_names,
             column_types: this.result.column_types,
+            comment: this.result.comment,
             datatypes: ['number', 'float', 'datetime', 'boolean', 'string'],
             rows: this.result.datarows,
             edit: false,
@@ -57,6 +58,7 @@ export default {
 
         onCreate: function() {
             this.edit = true;
+            comment = document.querySelector('#comment').value
             fetch('/api/create', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -64,6 +66,7 @@ export default {
                     file_id: this.file_id,
                     width: this.width,
                     height: this.height,
+                    comment: comment,
                     column_names: this.column_names,
                     column_types: this.column_types,
                     datarows: this.rows
@@ -87,6 +90,7 @@ export default {
                     timestamp: this.timestamp,
                     width: this.width,
                     height: this.height,
+                    comment: document.querySelector('#comment').value,
                     column_names: this.column_names,
                     column_types: this.column_types,
                     datarows: this.rows

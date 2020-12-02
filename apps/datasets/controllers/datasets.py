@@ -32,7 +32,7 @@ def read(dataset_id: int):
 @api_router.put("/datasets/{dataset_id}", response_model=DatasetDTO)
 def edit_dataset_info(dataset_id: int, body: DatasetDTO):
     """ Edit dataset column types and comment """
-    dataset = edit_dataset(dataset_id, body)
+    dataset = edit_dataset(dataset_id, body)  # type: ignore
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
     return dataset
@@ -51,7 +51,7 @@ def upload_dataset_file(file: UploadFile = File(...)):
 @api_router.post("/create", response_model=DatasetDTO)
 def create(file_info: CreateDatasetDTO):
     """ Create new dataset DB entry and return dataset info """
-    dataset = create_dataset(file_info)
+    dataset = create_dataset(file_info)  # type: ignore
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset creation error")
     return dataset
