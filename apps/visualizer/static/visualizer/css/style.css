@@ -21,6 +21,11 @@ div#site-subheader.item {
   padding-left: 0 !important;
 }
 
+div#home-container .message {
+  display: flex;
+  justify-content: center;
+  width: 80%;
+}
 div#home-container form.ui.form {
   padding-top: 4em;
   display: flex;

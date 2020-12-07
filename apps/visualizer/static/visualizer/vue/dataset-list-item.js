@@ -26,8 +26,7 @@ export default {
             fetch(`/api/datasets/${this.dataset.id}`, {
                 method: 'DELETE',
             })
-            .then(response => response.json())
-            .then(result => {
+            .then(() => {
                 this.$parent.fetchDatasets("1")
             })
         },
@@ -39,7 +38,12 @@ export default {
             event.preventDefault();
             event.stopPropagation();
             fetch(`/api/datasets/${this.dataset.id}`)
-            .then(response => response.json())
+            .then(response => {
+                if (response.status !== 200) {
+                    throw new Error('Dataset not found');
+                }
+                return response.json()
+            })
             .then(result => {
                 router.push({
                     name: 'editor',
@@ -48,7 +52,10 @@ export default {
                         new_dataset: false,
                     },
                 });
-            });
+            })
+            .catch(ex => {
+                console.log(ex.message);
+            })
          },
     },
 }

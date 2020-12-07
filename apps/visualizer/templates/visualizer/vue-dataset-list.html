@@ -15,6 +15,7 @@
                 <button class="ui button white" type="submit">Submit</button>
             </div>
         </form>
+        <div v-if="error" class="ui container red message">[[ error ]]</div>
 		<div id="dataset-table" class="ui container">
             <form id="search-form" @submit.prevent="fetchDatasets(1, true)" class="ui form">
 				<div class="field">

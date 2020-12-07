@@ -13,6 +13,7 @@ export default {
             hasPrev: null,
             auth: auth,
             numPages: null,
+            error: null,
         }
     },
     created: function () {
@@ -52,7 +53,12 @@ export default {
                 method: 'POST',
                 body: data,
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.status !== 200) {
+                    throw new Error('File upload error')
+                }
+                return response.json()
+            })
             .then(result => {
                 router.push({
                     name: 'editor',
@@ -61,7 +67,11 @@ export default {
                         new_dataset: true,
                     },
                 });
-            });
+            })
+            .catch(ex => {
+                console.log(ex.message);
+                this.error = ex.message + ": please provide .csv file with at least two columns and two rows";
+            })
 
             // Prevent default submission
             return false;
