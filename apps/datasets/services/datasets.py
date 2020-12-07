@@ -100,7 +100,7 @@ def read_csv(filename: str, filepath: str,) -> DatasetInfoDTO:
         height=line_num,
         width=sum(1 for _ in fieldnames),
         column_names=fieldnames,
-        column_types=[check_type(v) for v in next(reader).values()],
+        column_types=[check_type(str(v)) for v in next(reader).values()],
         datarows=[next(reader) for _ in range(rows_to_read)],
     )
     return file_info
