@@ -38,10 +38,16 @@
 				</thead>
 			    <tbody>
 					<dataset-list-item 
+                        v-if="datasets.length > 0"
 						v-for="dataset in datasets" 
                         :dataset="dataset"
 						:key="dataset.id">
 					</dataset-list-item>
+                    <tr v-if="datasets.length === 0">
+                        <td colspan="5">
+                            No datasets found
+                        </td>
+                    </tr>
 			  </tbody>
 			</table>
             <div class="ui pagination menu">
