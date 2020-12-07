@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Optional, List, Dict
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conint, constr
 
 
 __all__ = [
@@ -23,9 +23,9 @@ class ColumnType(str, Enum):
 
 class DatasetInfoDTO(BaseModel):
     """ transfer object for dataset's file information """
-    name: str
+    name: constr(min_length=5)
     comment: Optional[str]
-    width: int
+    width: conint(gt=1)
     height: int
     column_names: Optional[List[str]]
     column_types: Optional[List[ColumnType]]
