@@ -11,6 +11,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 echo "SECRET_KEY=$(python manage.py shell -c 'from django.core.management import utils; print(utils.get_random_secret_key())')" > .env
+source venv/bin/activate
 ./manage.py migrate
 ./manage.py createsuperuser 
 ```
