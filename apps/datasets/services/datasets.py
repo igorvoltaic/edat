@@ -2,6 +2,7 @@
 """
 import csv
 import datetime
+import logging
 import os
 import shutil
 from typing import Optional
@@ -80,6 +81,7 @@ def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
     """ Save file to Django's default temporary file location """
     file_id = get_file_id()
     tempfile = create_temporary_file(filename, file_id, file)
+    logging.info("Temporary file with id %s was created", file_id)
     file_info = read_csv(filename, tempfile)
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
@@ -145,6 +147,8 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
                 datatype=data[1],
             )
     file = move_tmpfile_to_media(file_info.file_id)
+    logging.info("Temporary file with id %s was moved to media",
+                 file_info.file_id)
     if not file:
         return None
     dataset.file = file
@@ -171,6 +175,7 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetInfoDTO]:
             if os.path.isfile(dataset.file.name):
                 file_dir = get_dir_path(dataset.file.name)
                 shutil.rmtree(file_dir)
+                logging.info("Dataset file was deleted")
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return DatasetInfoDTO.from_orm(dataset)
@@ -181,6 +186,7 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
     tmp_file_dir = get_tmpfilepath(file_id)
     if tmp_file_dir:
         shutil.rmtree(tmp_file_dir)
+        logging.info("Temporary file with id %s was deleted", file_id)
         return file_id
     return None
 
