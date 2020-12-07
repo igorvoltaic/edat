@@ -32,5 +32,7 @@ The FastAPI app is is available at `/api` (e.g. `http://localhost:8000/api/datas
 ### Code correctness
 
 Linters: `Pyright`, `Pylint`, `Flake8`
+
 Static Type-checking: `Pyright`, `mypy`
+
 Formatters: `autopep8`, `yapf`
