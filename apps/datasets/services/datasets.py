@@ -12,6 +12,8 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
+from fastapi import HTTPException
+from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO
@@ -82,7 +84,13 @@ def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
     file_id = get_file_id()
     tempfile = create_temporary_file(filename, file_id, file)
     logging.info("Temporary file with id %s was created", file_id)
-    file_info = read_csv(filename, tempfile)
+    try:
+        file_info = read_csv(filename, tempfile)
+    except (ValidationError, StopIteration) as invalid_file:
+        raise HTTPException(
+                status_code=400,
+                detail="Invalid filename or contents"
+        ) from invalid_file
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
 
