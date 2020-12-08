@@ -10,3 +10,4 @@ from .tmpdir import tmpdir
 from .mediadir import mediadir
 from .create_tmpdir import create_tmpdir
 from .login_required import login_required
+from .get_datatype_choices import get_datatype_choises
