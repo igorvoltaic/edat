@@ -21,3 +21,4 @@ six==1.15.0
 sqlparse==0.4.1
 starlette==0.13.6
 uvicorn==0.12.2
+django-enum-choices==2.1.2

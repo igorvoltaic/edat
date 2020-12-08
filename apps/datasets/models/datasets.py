@@ -1,7 +1,9 @@
 """ Dataset app models layer
 """
 from django.db import models
-from helpers import get_datatype_choises
+from django_enum_choices.fields import EnumChoiceField
+
+from apps.datasets.dtos import ColumnType
 
 
 class Dataset(models.Model):
@@ -27,5 +29,4 @@ class Column(models.Model):
     )
     index = models.IntegerField()
     name = models.CharField(max_length=50, blank=True)
-    DATATYPE_CHOICES = get_datatype_choises()
-    datatype = models.CharField(choices=DATATYPE_CHOICES, max_length=8)
+    datatype = EnumChoiceField(ColumnType)

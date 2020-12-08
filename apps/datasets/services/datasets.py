@@ -152,7 +152,7 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
                 dataset=dataset,
                 index=index,
                 name=data[0],
-                datatype=ColumnType(data[1]).name,
+                datatype=ColumnType(data[1]),
             )
     file = move_tmpfile_to_media(file_info.file_id)
     logging.info("Temporary file with id %s was moved to media",
