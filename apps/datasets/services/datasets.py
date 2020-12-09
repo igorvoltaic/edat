@@ -93,7 +93,7 @@ def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
     logging.info("Temporary file with id %s was created", file_id)
     try:
         file_info = read_csv(filename, tempfile)
-    except (ValidationError, ValueError) as invalid_file:
+    except (ValidationError, StopIteration, ValueError) as invalid_file:
         raise HTTPException(
                 status_code=400,
                 detail="Invalid filename or contents"
