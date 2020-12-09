@@ -10,7 +10,7 @@ from apps.datasets.services import get_all_datasets, get_dataset, \
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
         DatasetInfoDTO
 
-from helpers import login_required
+from helpers.auth_tools import login_required
 
 
 api_router = APIRouter()

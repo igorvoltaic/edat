@@ -18,9 +18,10 @@ from pydantic import ValidationError
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO
 from apps.datasets.models import Dataset, Column
-from helpers import create_temporary_file, get_file_id, \
-        move_tmpfile_to_media, get_tmpfilepath, count_lines, \
-        sample_rows_count, examine_csv, get_dir_path
+from helpers.file_tools import create_temporary_file, get_file_id, \
+        move_tmpfile_to_media, get_tmpfilepath, get_dir_path
+from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
+
 
 __all__ = [
     'get_dataset', 'get_all_datasets', 'read_csv',
@@ -82,11 +83,17 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
 def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
     """ Save file to Django's default temporary file location """
     file_id = get_file_id()
-    tempfile = create_temporary_file(filename, file_id, file)
+    try:
+        tempfile = create_temporary_file(filename, file_id, file)
+    except (FileExistsError, OSError):
+        raise HTTPException(
+                status_code=503,
+                detail="Cannot save temporary file"
+        )
     logging.info("Temporary file with id %s was created", file_id)
     try:
         file_info = read_csv(filename, tempfile)
-    except (ValidationError, StopIteration) as invalid_file:
+    except (ValidationError, ValueError) as invalid_file:
         raise HTTPException(
                 status_code=400,
                 detail="Invalid filename or contents"
@@ -155,10 +162,10 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
                 datatype=ColumnType(data[1]),
             )
     file = move_tmpfile_to_media(file_info.file_id)
-    logging.info("Temporary file with id %s was moved to media",
-                 file_info.file_id)
     if not file:
         return None
+    logging.info("Temporary file with id %s was moved to media",
+                 file_info.file_id)
     dataset.file = file
     dataset.save()
     return DatasetDTO(
