@@ -28,6 +28,7 @@ def examine_csv(file: str) -> Tuple[Type[csv.Dialect], bool]:
 
 def sample_rows_count(line_num: int) -> int:
     """ helper which returns number of rows to read for data sample """
-    if line_num < settings.PREREAD_SAMPLE_ROWS:
+    rows_count = settings.PREREAD_SAMPLE_ROWS
+    if line_num < rows_count:
         rows_count = line_num - 1
     return rows_count
