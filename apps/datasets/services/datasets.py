@@ -16,8 +16,8 @@ from fastapi import HTTPException
 from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
-        DatasetInfoDTO, PageDTO
-from apps.datasets.models import Dataset, Column
+        DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar
+from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfilepath, get_dir_path
 from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
@@ -36,7 +36,10 @@ def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
     """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
-        file_info = read_csv(dataset.name, dataset.file.name)
+        csv_dialect = CsvDialectDTO.from_orm(dataset.csv_dialect)
+        file_info = read_csv(dataset.name,
+                             dataset.file.name,
+                             csv_dialect=csv_dialect)
         file_info.comment = dataset.comment
         for index, _ in enumerate(zip(  # type: ignore
             file_info.column_names,
@@ -102,12 +105,22 @@ def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
     return create_dto
 
 
-def read_csv(filename: str, filepath: str,) -> DatasetInfoDTO:
+def read_csv(
+            filename: str,
+            filepath: str,
+            csv_dialect: CsvDialectDTO = None
+        ) -> DatasetInfoDTO:
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
     file = open(filepath, 'r').read()
-    dialect, has_header = examine_csv(file)
+    dialect, has_header = examine_csv(file, csv_dialect)
+    if not csv_dialect:
+        csv_dialect = CsvDialectDTO(
+            delimiter=dialect.delimiter,
+            quotechar=dialect.quotechar,
+            has_header=has_header
+        )
     reader = csv.DictReader(file.split('\n'), dialect=dialect)
     fieldnames = reader.fieldnames
     line_num = count_lines(file, has_header)
@@ -119,6 +132,7 @@ def read_csv(filename: str, filepath: str,) -> DatasetInfoDTO:
         column_names=fieldnames,
         column_types=[check_type(str(v)) for v in next(reader).values()],
         datarows=[next(reader) for _ in range(rows_to_read)],
+        csv_dialect=csv_dialect
     )
     return file_info
 
@@ -130,13 +144,35 @@ def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
     except Dataset.DoesNotExist:  # type: ignore
         return None
-    for index, col_type in enumerate(dto.column_types):  # type: ignore
-        column = Column.objects.get(  # type: ignore
-                dataset_id=dataset.id,
-                index=index
-        )
-        column.datatype = col_type
-        column.save()
+    # In case we changed the delimiter number of columns was changed as well
+    # and now we need to delete unnecessary columns and add new ones after that
+    if Column.objects.count() == dto.width:  # type: ignore
+        Column.objects.all().delete()  # type: ignore
+        for index, data in enumerate(zip(  # type: ignore
+            dto.column_names,
+            dto.column_types)
+        ):
+            Column.objects.create(  # type: ignore
+                    dataset=dataset,
+                    index=index,
+                    name=data[0],
+                    datatype=ColumnType(data[1]),
+                )
+    else:
+        for index, col_type in enumerate(dto.column_types):  # type: ignore
+            column = Column.objects.get(  # type: ignore
+                    dataset_id=dataset.id,
+                    index=index
+            )
+            column.datatype = col_type
+            column.save()
+    csv_dialect = CsvDialect.objects.get(  # type: ignore
+        dataset_id=dataset.id
+    )
+    csv_dialect.delimiter = Delimiter(dto.csv_dialect.delimiter)
+    csv_dialect.quotechar = Quotechar(dto.csv_dialect.quotechar)
+    csv_dialect.has_header = dto.csv_dialect.has_header
+    csv_dialect.save()
     dataset.comment = dto.comment
     dataset.save()
     return dto
@@ -161,6 +197,16 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
                 name=data[0],
                 datatype=ColumnType(data[1]),
             )
+    try:
+        csv_dialect = CsvDialect.objects.create(  # type: ignore
+            dataset_id=dataset.id,
+            delimiter=Delimiter(file_info.csv_dialect.delimiter),
+            quotechar=Quotechar(file_info.csv_dialect.quotechar),
+            has_header=file_info.csv_dialect.has_header
+        )
+        csv_dialect.save()
+    except ValueError:
+        pass
     file = move_tmpfile_to_media(file_info.file_id)
     if not file:
         return None

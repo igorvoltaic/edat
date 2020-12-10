@@ -8,18 +8,41 @@ export default {
     props: ['result', 'new_dataset'],
     data() {
         return {
-            filename: this.result.name,
             file_id: null,
             id: null,
-            timestamp: this.result.timestamp,
-            width: this.result.width,
-            height: this.result.height,
-            column_names: this.result.column_names,
-            column_types: this.result.column_types,
-            comment: this.result.comment,
+            datasetInfo: {
+                name: this.result.name,
+                timestamp: this.result.timestamp,
+                width: this.result.width,
+                height: this.result.height,
+                column_names: this.result.column_names,
+                column_types: this.result.column_types,
+                comment: this.result.comment,
+                csv_dialect: {
+                    delimiter: this.result.csv_dialect.delimiter,
+                    quotechar: this.result.csv_dialect.quotechar,
+                    has_header: this.result.csv_dialect.has_header,
+                }
+            },
             datatypes: ['number', 'float', 'datetime', 'boolean', 'string'],
+            delimiters: [
+                { name: 'comma', value: ',' },
+                { name: 'semicolon', value: ';' },
+                { name: 'colon', value: ':' },
+                { name: 'space', value: ' ' },
+                { name: 'tab', value: '\t' },
+            ],
+            quotechars: [
+                { name: 'singlequote', value: "'" },
+                { name: 'doublequote', value: '"' },
+            ],
+            has_header: [
+                { name: 'true', value: true },
+                { name: 'false', value: false }
+            ],
             rows: this.result.datarows,
             edit: false,
+            isHidden: true,
         }
     },
 
@@ -53,27 +76,31 @@ export default {
         },
 
         onChangeType: function(event, index) {
-            this.column_types[index] = event.target.value;
+            this.datasetInfo.column_types[index] = event.target.value;
+        },
+
+        onSaveDialect: function() {
+            this.datasetInfo.csv_dialect.delimiter = document.querySelector('#csv-delimiter').value;
+            this.datasetInfo.csv_dialect.quotechar = document.querySelector('#csv-quotechar').value;
+            if (document.querySelector('#csv-has-header').value === "false") {
+                this.datasetInfo.csv_dialect.has_header = false
+            } else {
+                this.datasetInfo.csv_dialect.has_header = true
+            }
         },
 
         onCreate: function() {
             this.edit = true;
-            comment = document.querySelector('#comment').value
+            const comment = document.querySelector('#comment').value
+            let body = this.datasetInfo
+            body.file_id = this.result.file_id
+            body.comment = comment
             fetch('/api/create', {
                 method: 'POST',
-                body: JSON.stringify({
-                    name: this.filename,
-                    file_id: this.file_id,
-                    width: this.width,
-                    height: this.height,
-                    comment: comment,
-                    column_names: this.column_names,
-                    column_types: this.column_types,
-                    datarows: this.rows
-                })
+                body: JSON.stringify(body)
             })
             .then(response => response.json())
-            .then(result => {
+            .then(() => {
                 router.push({
                     name: 'home',
                 });
@@ -82,27 +109,39 @@ export default {
 
         onSave: function() {
             this.edit = true;
+            const comment = document.querySelector('#comment').value
+            let body = this.datasetInfo
+            body.id = this.result.id
+            body.comment = comment
             fetch(`/api/datasets/${this.id}`, {
                 method: 'PUT',
-                body: JSON.stringify({
-                    name: this.filename,
-                    id: this.id,
-                    timestamp: this.timestamp,
-                    width: this.width,
-                    height: this.height,
-                    comment: document.querySelector('#comment').value,
-                    column_names: this.column_names,
-                    column_types: this.column_types,
-                    datarows: this.rows
-                })
+                body: JSON.stringify(body)
             })
             .then(response => response.json())
-            .then(result => {
+            .then(() => {
                 router.push({
                     name: 'home',
                 });
             });
         },
+
+        reReadFile: function() {
+            this.edit = true;
+            const comment = document.querySelector('#comment').value
+            let body = this.datasetInfo
+            body.file_id = this.result.file_id
+            body.comment = comment
+            fetch('/api/create', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            })
+            .then(response => response.json())
+            .then(() => {
+                router.push({
+                    name: 'home',
+                });
+            });
+         },
 
         onCancel: function() {
             this.edit = true;
@@ -111,7 +150,7 @@ export default {
                     method: 'DELETE',
                 })
                 .then(response => response.json())
-                .then(result => {
+                .then(() => {
                     router.push({
                         name: 'home',
                     });

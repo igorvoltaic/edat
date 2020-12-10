@@ -8,28 +8,34 @@
 <script type="text/x-template" id="dataset-editor-template">
     <div id="home-container" class="ui container">
         <div class="dataset-editor-header">
-            <h1>[[ filename ]]</h1>
+            <h1>[[ datasetInfo.name ]]</h1>
             <div>
                 <button v-if="new_dataset" @click="onCreate" class="ui button green">Create</button>
                 <button v-else @click="onSave" class="ui button green">Save</button>
                 <button @click="onCancel" class="ui button gray">Cancel</button>
             </div>
         </div>
+        <div class="dataset-editor-header">
+            <div></div>
+            <div> 
+                <p>Wrong column number or headers? Please <a @click="isHidden = !isHidden">click here</a></p>
+            </div>
+        </div>
         <div id="editor-comment" class="ui labeled input">
             <div class="ui label">
                 Comment
             </div>
-            <input id="comment" type="text" :value="[[ comment ]]" placeholder="Input">
+            <input id="comment" type="text" :value="[[ datasetInfo.comment ]]" placeholder="Input">
         </div>
 		<div id="data-table" class="ui container">
 			<table class="ui celled striped table">
 				<thead>
                     <tr>
-						<th v-for="column_name in column_names" 
+						<th v-for="column_name in datasetInfo.column_names" 
                          class="center aligned">[[ column_name ]]</th> 
 					</tr> 
                     <tr>
-						<th v-for="column_type, index in column_types" class="type-dropdown-cell center aligned">
+						<th v-for="column_type, index in datasetInfo.column_types" class="type-dropdown-cell center aligned">
                             <select @change="onChangeType($event, index)" class="type-dropdown" name="column_types" id="column_types">
                                 <option
                                  v-for="type in datatypes" 
@@ -47,6 +53,37 @@
 			  </tbody>
 			</table>
 		</div>
+        <div id="csv-config-menu" class="" :class="{ hidden: isHidden }">
+            <div id="csv-config-menu-header"><h2>CSV configuration</h2></div>
+            <div class="ui labeled input">
+                <select class="type-dropdown" name="delimiter" id="csv-delimiter">
+                    <option
+                        v-for="delimiter in delimiters" 
+                        :value="delimiter.value"
+                        :selected="delimiter.value === datasetInfo.csv_dialect.delimiter">[[ delimiter.name ]]</option>
+                </select>
+            </div>
+            <div class="ui labeled input">
+                <select class="type-dropdown" name="quotechar" id="csv-quotechar">
+                    <option
+                        v-for="quotechar in quotechars" 
+                        :value="quotechar.value"
+                        :selected="quotechar.value === datasetInfo.csv_dialect.quotechar">[[ quotechar.name ]]</option>
+                </select>
+            </div>
+            <div class="ui labeled input">
+                <select class="type-dropdown" name="header" id="csv-has-header">
+                    <option
+                        v-for="header in has_header" 
+                        :value="header.value"
+                        :selected="header.value === datasetInfo.csv_dialect.has_header">[[ header.name ]]</option>
+                </select>
+            </div>
+            <div id="csv-config-menu-buttons">
+                <button @click="onSaveDialect();" class="ui button gray">Save Dialect</button>
+                <button @click="isHidden = true" class="ui button gray">Cancel</button>
+            </div>
+        </div>
     </div>
 </script>
 

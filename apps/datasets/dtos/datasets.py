@@ -7,13 +7,13 @@ from pydantic import BaseModel, Field, conint, constr
 
 
 __all__ = [
-    'ColumnType', 'CreateDatasetDTO', 'DatasetDTO',
-    'DatasetInfoDTO', 'PageDTO'
+    'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
+    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar'
 ]
 
 
 class ColumnType(str, Enum):
-    """ Enum class which returns dataset column types """
+    """ Enum class for dataset column types """
     INT = "number"
     FLOAT = "float"
     DATETIME = "datetime"
@@ -21,15 +21,38 @@ class ColumnType(str, Enum):
     STRING = "string"
 
 
+class Delimiter(str, Enum):
+    COMMA = ","
+    SEMICOLON = ";"
+    COLON = ":"
+    SPACE = " "
+    TAB = "\t"
+
+
+class Quotechar(str, Enum):
+    SINGLE = "'"
+    DOUBLE = '"'
+
+
+class CsvDialectDTO(BaseModel):
+    delimiter: Delimiter
+    quotechar: Quotechar
+    has_header: bool
+
+    class Config:
+        orm_mode = True
+
+
 class DatasetInfoDTO(BaseModel):
     """ transfer object for dataset's file information """
     name: constr(min_length=5)
     comment: Optional[str]
-    width: conint(gt=1)
+    width: int
     height: int
     column_names: Optional[List[str]]
     column_types: Optional[List[ColumnType]]
     datarows: Optional[List[Dict]]
+    csv_dialect: Optional[CsvDialectDTO]
 
     class Config:
         orm_mode = True

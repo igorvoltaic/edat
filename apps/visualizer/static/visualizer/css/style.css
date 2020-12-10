@@ -1,3 +1,31 @@
+.hidden {
+  display: none !important;
+}
+
+#csv-config-menu {
+  position: absolute;
+  background-color: #fff;
+  height: 23em;
+  width: 40em;
+  top: 20em;
+  left: calc(50% - 20em);
+  border: #dedede 3px solid;
+  display: flex;
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  box-shadow: 0px 3px 30px 5px #444;
+}
+#csv-config-menu div#csv-config-menu-header {
+  margin-bottom: 1em;
+  margin-top: -1em;
+}
+#csv-config-menu div {
+  width: 60%;
+  margin-bottom: 1em;
+}
+
 .dataset-editor-header {
   display: flex;
   align-items: center;
@@ -6,6 +34,12 @@
 }
 .dataset-editor-header h1 {
   margin: 0;
+}
+.dataset-editor-header p {
+  margin-right: 0.3em;
+}
+.dataset-editor-header a {
+  cursor: pointer;
 }
 
 #editor-comment {

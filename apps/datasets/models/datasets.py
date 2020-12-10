@@ -3,7 +3,7 @@
 from django.db import models
 from django_enum_choices.fields import EnumChoiceField
 
-from apps.datasets.dtos import ColumnType
+from apps.datasets.dtos import ColumnType, Delimiter, Quotechar
 
 
 class Dataset(models.Model):
@@ -18,6 +18,18 @@ class Dataset(models.Model):
         models.Index(fields=['-timestamp']),
         models.Index(fields=['name']),
     ]
+
+
+class CsvDialect(models.Model):
+    """ CSV file delimiter, quotechar and has_header information"""
+    dataset = models.OneToOneField(
+        Dataset,
+        on_delete=models.CASCADE,
+        related_name="csv_dialect"
+    )
+    delimiter = EnumChoiceField(Delimiter)
+    quotechar = EnumChoiceField(Quotechar)
+    has_header = models.BooleanField()
 
 
 class Column(models.Model):
