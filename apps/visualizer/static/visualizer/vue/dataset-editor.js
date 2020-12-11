@@ -109,20 +109,16 @@ export default {
 
         reReadFile: function() {
             this.edit = true;
-            const comment = document.querySelector('#comment').value
-            let body = this.datasetInfo
+            let body = this.datasetInfo.csv_dialect
             let path = null
             if (this.new_dataset) {
-                body.file_id = this.result.file_id
-                path = '/api/reread'
+                path = `/api/reread?file_id=${this.file_id}`
             } else {
-                body.id = this.result.id
                 path = `/api/reread/${this.id}`
             }
-            body.csv_dialect.delimiter = document.querySelector('#csv-delimiter').value
-            body.csv_dialect.quotechar = document.querySelector('#csv-quotechar').value
-            body.csv_dialect.has_header = document.querySelector('#csv-has-header').value
-            body.comment = comment
+            body.delimiter = document.querySelector('#csv-delimiter').value
+            body.quotechar = document.querySelector('#csv-quotechar').value
+            body.has_header = document.querySelector('#csv-has-header').value
             fetch(path, {
                 method: 'POST',
                 body: JSON.stringify(body)

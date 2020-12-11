@@ -61,6 +61,17 @@ def get_tmpfile_dirpath(file_id: str) -> Optional[str]:
         return None
 
 
+def get_tmpfile_name(file_id: str) -> Optional[str]:
+    """ Return file path based on file's id """
+    tmp_file_dir = os.path.join(tmpdir(), file_id)
+    try:
+        filepath = glob.glob(f"{tmp_file_dir}/*.csv")[0]
+        filename = os.path.split(filepath)[1]
+        return filename
+    except IndexError:
+        return None
+
+
 def get_tmpfile_path(file_id: str) -> Optional[str]:
     """ Return file path based on file's id """
     tmp_file_dir = os.path.join(tmpdir(), file_id)

@@ -20,39 +20,44 @@ from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
 from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
-        get_tmpfile_path
+        get_tmpfile_path, get_tmpfile_name
 from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
 
 
 __all__ = [
-    'get_dataset', 'get_all_datasets', 'read_csv',
+    'read_dataset', 'get_all_datasets', 'read_csv',
     'create_dataset', 'delete_dataset', 'handle_uploaded_file',
-    'delete_tmpfile', 'edit_dataset', 'reread_uploaded_file',
-    'reread_dataset_file'
+    'delete_tmpfile', 'edit_dataset'
 ]
 
 
-def get_dataset(dataset_id: int) -> Optional[DatasetDTO]:
+def read_dataset(
+            dataset_id: int,
+            dialect: Optional[CsvDialectDTO] = None
+        ) -> Optional[DatasetDTO]:
     """ Get dataset object and return its file info
         to let user edit column types
+        Or reread file using user-supplied delimiters
     """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
-        csv_dialect = CsvDialectDTO.from_orm(dataset.csv_dialect)
+        csv_dialect = dialect if dialect \
+            else CsvDialectDTO.from_orm(dataset.csv_dialect)
         file_info = read_csv(dataset.name,
                              dataset.file.name,
                              csv_dialect=csv_dialect)
         file_info.comment = dataset.comment
-        for index, _ in enumerate(zip(  # type: ignore
-            file_info.column_names,
-            file_info.column_types)
-        ):
-            column = Column.objects.get(  # type: ignore
-                    dataset_id=dataset_id,
-                    index=index
-            )
-            file_info.column_names[index] = column.name
-            file_info.column_types[index] = column.datatype
+        if not dialect:
+            for index, _ in enumerate(zip(  # type: ignore
+                file_info.column_names,
+                file_info.column_types)
+            ):
+                column = Column.objects.get(  # type: ignore
+                        dataset_id=dataset_id,
+                        index=index
+                )
+                file_info.column_names[index] = column.name
+                file_info.column_types[index] = column.datatype
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return DatasetDTO(
@@ -85,59 +90,44 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
     return page_data
 
 
-def reread_dataset_file(dto: DatasetDTO) -> Optional[DatasetDTO]:
+def handle_uploaded_file(
+            filename: Optional[str] = None,
+            file: Optional[bytes] = None,
+            file_id: Optional[str] = None,
+            dialect: Optional[CsvDialectDTO] = None
+        ) -> CreateDatasetDTO:
+    """ Save file to Django's default temporary file location
+        Read file data and return information about its contents
+        Or reread information using user-supplied csv dialect
+    """
+    name = ''
+    tempfile = ''
+    if file_id:
+        tempfile = get_tmpfile_path(file_id)
+        name = get_tmpfile_name(file_id)
+        if not tempfile:
+            raise HTTPException(
+                    status_code=503,
+                    detail="Cannot read temporary file"
+            )
+    elif file and filename:
+        name = filename
+        file_id = get_file_id()
+        try:
+            tempfile = create_temporary_file(filename, file_id, file)
+            logging.info("Temporary file with id %s was created", file_id)
+        except (FileExistsError, OSError) as file_creation_error:
+            raise HTTPException(
+                    status_code=503,
+                    detail="Cannot save temporary file"
+            ) from file_creation_error
     try:
-        dataset = Dataset.objects.get(pk=dto.id)  # type: ignore
-        file_info = read_csv(dataset.name,
-                             dataset.file.name,
-                             csv_dialect=dto.csv_dialect)
-        file_info.comment = dataset.comment
-    except Dataset.DoesNotExist:  # type: ignore
-        return None
-    return DatasetDTO(
-            **file_info.dict(),
-            id=dataset.id,
-            timestamp=dataset.timestamp,
-        )
-
-
-def reread_uploaded_file(file_info: CreateDatasetDTO) -> CreateDatasetDTO:
-    file_id = file_info.file_id
-    filename = file_info.name
-    tempfile = get_tmpfile_path(file_id)
-    if not tempfile:
-        raise HTTPException(
-                status_code=503,
-                detail="Cannot read temporary file"
-        )
-    try:
-        updated_info = read_csv(filename, tempfile, file_info.csv_dialect)
+        file_info = read_csv(name, tempfile, dialect) if file_id \
+            else read_csv(name, tempfile)
     except (ValidationError, StopIteration, ValueError) as invalid_file:
         raise HTTPException(
                 status_code=400,
-                detail="Invalid filename or contents"
-        ) from invalid_file
-    create_dto = CreateDatasetDTO(**updated_info.dict(), file_id=file_id)
-    return create_dto
-
-
-def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
-    """ Save file to Django's default temporary file location """
-    file_id = get_file_id()
-    try:
-        tempfile = create_temporary_file(filename, file_id, file)
-    except (FileExistsError, OSError):
-        raise HTTPException(
-                status_code=503,
-                detail="Cannot save temporary file"
-        )
-    logging.info("Temporary file with id %s was created", file_id)
-    try:
-        file_info = read_csv(filename, tempfile)
-    except (ValidationError, StopIteration, ValueError) as invalid_file:
-        raise HTTPException(
-                status_code=400,
-                detail="Invalid filename or contents"
+                detail=f"Invalid filename or contents{name}"
         ) from invalid_file
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
@@ -184,7 +174,7 @@ def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
         return None
     # In case we changed the delimiter number of columns was changed as well
     # and now we need to delete unnecessary columns and add new ones after that
-    if Column.objects.count() == dto.width:  # type: ignore
+    if Column.objects.count() != dto.width:  # type: ignore
         Column.objects.all().delete()  # type: ignore
         for index, data in enumerate(zip(  # type: ignore
             dto.column_names,

@@ -3,13 +3,12 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile, Request
 from fastapi.responses import JSONResponse
 
-from apps.datasets.services import get_all_datasets, get_dataset, \
+from apps.datasets.services import get_all_datasets, read_dataset, \
     handle_uploaded_file, delete_tmpfile, edit_dataset, \
-    create_dataset, delete_dataset, reread_uploaded_file, \
-    reread_dataset_file
+    create_dataset, delete_dataset
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
-        DatasetInfoDTO
+        DatasetInfoDTO, CsvDialectDTO
 
 from helpers.auth_tools import login_required
 
@@ -27,9 +26,9 @@ def read_all(request: Request, page: int, query: str = None):
 
 @api_router.get("/datasets/{dataset_id}", response_model=DatasetDTO)
 @login_required
-def read(request: Request, dataset_id: int):
+def get_dataset(request: Request, dataset_id: int):
     """ Open dataset and visualize data """
-    dataset = get_dataset(dataset_id)
+    dataset = read_dataset(dataset_id)
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
     return dataset
@@ -56,11 +55,11 @@ def upload_dataset_file(request: Request, file: UploadFile = File(...)):
     return file_info
 
 
-@api_router.post("/reread/{datase_id}", response_model=DatasetDTO)
+@api_router.post("/reread/{dataset_id}", response_model=DatasetDTO)
 @login_required
-def reread_dataset(request: Request, dataset_info: DatasetDTO):
+def reread_dataset(request: Request, dataset_id: int, body: CsvDialectDTO):
     """ Create new dataset DB entry and return dataset info """
-    dataset = reread_dataset_file(dataset_info)  # type: ignore
+    dataset = read_dataset(dataset_id, body)  # type: ignore
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset amendment error")
     return dataset
@@ -68,9 +67,9 @@ def reread_dataset(request: Request, dataset_info: DatasetDTO):
 
 @api_router.post("/reread", response_model=CreateDatasetDTO)
 @login_required
-def reread_tmpfile(request: Request, file_info: CreateDatasetDTO):
+def reread_tmpfile(request: Request, file_id: str, dialect: CsvDialectDTO):
     """ Create new dataset DB entry and return dataset info """
-    dataset = reread_uploaded_file(file_info)  # type: ignore
+    dataset = handle_uploaded_file(file_id=file_id, dialect=dialect)
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset amendment error")
     return dataset
