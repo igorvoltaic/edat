@@ -12,7 +12,6 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
-from fastapi import HTTPException
 from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
@@ -100,35 +99,25 @@ def handle_uploaded_file(
         Read file data and return information about its contents
         Or reread information using user-supplied csv dialect
     """
-    name = ''
-    tempfile = ''
-    if file_id:
+    if file_id and not filename:
         tempfile = get_tmpfile_path(file_id)
-        name = get_tmpfile_name(file_id)
+        filename = get_tmpfile_name(file_id)
         if not tempfile:
-            raise HTTPException(
-                    status_code=503,
-                    detail="Cannot read temporary file"
-            )
+            raise Exception("Cannot read temporary file")
     elif file and filename:
-        name = filename
         file_id = get_file_id()
         try:
             tempfile = create_temporary_file(filename, file_id, file)
             logging.info("Temporary file with id %s was created", file_id)
-        except (FileExistsError, OSError) as file_creation_error:
-            raise HTTPException(
-                    status_code=503,
-                    detail="Cannot save temporary file"
-            ) from file_creation_error
+        except (FileExistsError, OSError) as tmpfile_error:
+            raise Exception("Cannot save temporary file") from tmpfile_error
     try:
-        file_info = read_csv(name, tempfile, dialect) if file_id \
-            else read_csv(name, tempfile)
+        if file_id:
+            file_info = read_csv(filename, tempfile, dialect)  # type: ignore
+        else:
+            file_info = read_csv(filename, tempfile)  # type: ignore
     except (ValidationError, StopIteration, ValueError) as invalid_file:
-        raise HTTPException(
-                status_code=400,
-                detail=f"Invalid filename or contents{name}"
-        ) from invalid_file
+        raise Exception("Invalid filename or contents") from invalid_file
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
 
@@ -234,7 +223,10 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
         )
         csv_dialect.save()
     except ValueError:
-        pass
+        logging.error(
+            "Wasn't able to create a dialect db entry for dataset with id %s",
+            dataset.id
+        )
     file = move_tmpfile_to_media(file_info.file_id)
     if not file:
         return None
