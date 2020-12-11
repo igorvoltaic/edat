@@ -8,7 +8,9 @@ User -> API: Uploads .csv file
 API -> FS: Save .csv file into temp folder
 API --> User: Return parsed header specification and temp ID
 ...
-User -> API: Temp ID and corrected version of dataset headers and dialect
+User => API: CSV Dialect 
+API --> User: Return re-parsed header specification and temp ID
+User -> API: Temp ID and corrected version of dataset headers
 API -> FS: Read temp file
 FS --> API: Bytes file content
 API -> DB: Create Dataset model
