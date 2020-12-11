@@ -5,7 +5,8 @@ from fastapi.responses import JSONResponse
 
 from apps.datasets.services import get_all_datasets, get_dataset, \
     handle_uploaded_file, delete_tmpfile, edit_dataset, \
-    create_dataset, delete_dataset, reread_uploaded_file
+    create_dataset, delete_dataset, reread_uploaded_file, \
+    reread_dataset_file
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
         DatasetInfoDTO
@@ -55,9 +56,19 @@ def upload_dataset_file(request: Request, file: UploadFile = File(...)):
     return file_info
 
 
+@api_router.post("/reread/{datase_id}", response_model=DatasetDTO)
+@login_required
+def reread_dataset(request: Request, dataset_info: DatasetDTO):
+    """ Create new dataset DB entry and return dataset info """
+    dataset = reread_dataset_file(dataset_info)  # type: ignore
+    if not dataset:
+        raise HTTPException(status_code=422, detail="Dataset amendment error")
+    return dataset
+
+
 @api_router.post("/reread", response_model=CreateDatasetDTO)
 @login_required
-def reread(request: Request, file_info: CreateDatasetDTO):
+def reread_tmpfile(request: Request, file_info: CreateDatasetDTO):
     """ Create new dataset DB entry and return dataset info """
     dataset = reread_uploaded_file(file_info)  # type: ignore
     if not dataset:

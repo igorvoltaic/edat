@@ -10,7 +10,7 @@
         <div class="dataset-editor-header">
             <h1>[[ datasetInfo.name ]]</h1>
             <div>
-                <button v-if="new_dataset" @click="onCreate" class="ui button green">Create</button>
+                <button v-if="new_dataset" @click="onSave" class="ui button green">Create</button>
                 <button v-else @click="onSave" class="ui button green">Save</button>
                 <button @click="onCancel" class="ui button gray">Cancel</button>
             </div>

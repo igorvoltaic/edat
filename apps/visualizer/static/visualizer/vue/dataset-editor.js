@@ -79,42 +79,24 @@ export default {
             this.datasetInfo.column_types[index] = event.target.value;
         },
 
-        onSaveDialect: function() {
-            this.datasetInfo.csv_dialect.delimiter = document.querySelector('#csv-delimiter').value;
-            this.datasetInfo.csv_dialect.quotechar = document.querySelector('#csv-quotechar').value;
-            if (document.querySelector('#csv-has-header').value === "false") {
-                this.datasetInfo.csv_dialect.has_header = false
-            } else {
-                this.datasetInfo.csv_dialect.has_header = true
-            }
-        },
-
-        onCreate: function() {
-            this.edit = true;
-            const comment = document.querySelector('#comment').value
-            let body = this.datasetInfo
-            body.file_id = this.result.file_id
-            body.comment = comment
-            fetch('/api/create', {
-                method: 'POST',
-                body: JSON.stringify(body)
-            })
-            .then(response => response.json())
-            .then(() => {
-                router.push({
-                    name: 'home',
-                });
-            });
-        },
-
         onSave: function() {
             this.edit = true;
             const comment = document.querySelector('#comment').value
             let body = this.datasetInfo
-            body.id = this.result.id
+            let path = null
+            let method = null
+            if (this.new_dataset) {
+                body.file_id = this.result.file_id
+                path= '/api/create'
+                method = 'POST'
+            } else {
+                body.id = this.result.id
+                path = `/api/datasets/${this.id}`
+                method = 'PUT'
+            }
             body.comment = comment
-            fetch(`/api/datasets/${this.id}`, {
-                method: 'PUT',
+            fetch(path, {
+                method: method,
                 body: JSON.stringify(body)
             })
             .then(response => response.json())
@@ -129,12 +111,19 @@ export default {
             this.edit = true;
             const comment = document.querySelector('#comment').value
             let body = this.datasetInfo
-            body.file_id = this.result.file_id
+            let path = null
+            if (this.new_dataset) {
+                body.file_id = this.result.file_id
+                path = '/api/reread'
+            } else {
+                body.id = this.result.id
+                path = `/api/reread/${this.id}`
+            }
             body.csv_dialect.delimiter = document.querySelector('#csv-delimiter').value
             body.csv_dialect.quotechar = document.querySelector('#csv-quotechar').value
             body.csv_dialect.has_header = document.querySelector('#csv-has-header').value
             body.comment = comment
-            fetch('/api/reread', {
+            fetch(path, {
                 method: 'POST',
                 body: JSON.stringify(body)
             })

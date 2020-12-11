@@ -27,7 +27,8 @@ from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
 __all__ = [
     'get_dataset', 'get_all_datasets', 'read_csv',
     'create_dataset', 'delete_dataset', 'handle_uploaded_file',
-    'delete_tmpfile', 'edit_dataset', 'reread_uploaded_file'
+    'delete_tmpfile', 'edit_dataset', 'reread_uploaded_file',
+    'reread_dataset_file'
 ]
 
 
@@ -82,6 +83,22 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
         num_pages=paginator.num_pages
     )
     return page_data
+
+
+def reread_dataset_file(dto: DatasetDTO) -> Optional[DatasetDTO]:
+    try:
+        dataset = Dataset.objects.get(pk=dto.id)  # type: ignore
+        file_info = read_csv(dataset.name,
+                             dataset.file.name,
+                             csv_dialect=dto.csv_dialect)
+        file_info.comment = dataset.comment
+    except Dataset.DoesNotExist:  # type: ignore
+        return None
+    return DatasetDTO(
+            **file_info.dict(),
+            id=dataset.id,
+            timestamp=dataset.timestamp,
+        )
 
 
 def reread_uploaded_file(file_info: CreateDatasetDTO) -> CreateDatasetDTO:
