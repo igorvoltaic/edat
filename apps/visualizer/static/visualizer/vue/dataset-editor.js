@@ -130,16 +130,23 @@ export default {
             const comment = document.querySelector('#comment').value
             let body = this.datasetInfo
             body.file_id = this.result.file_id
+            body.csv_dialect.delimiter = document.querySelector('#csv-delimiter').value
+            body.csv_dialect.quotechar = document.querySelector('#csv-quotechar').value
+            body.csv_dialect.has_header = document.querySelector('#csv-has-header').value
             body.comment = comment
-            fetch('/api/create', {
+            fetch('/api/reread', {
                 method: 'POST',
                 body: JSON.stringify(body)
             })
             .then(response => response.json())
-            .then(() => {
-                router.push({
-                    name: 'home',
-                });
+            .then(result => {
+                this.datasetInfo.width = result.width
+                this.datasetInfo.column_names = result.column_names
+                this.datasetInfo.column_types = result.column_types
+                this.datasetInfo.csv_dialect.delimiter = result.csv_dialect.delimiter
+                this.datasetInfo.csv_dialect.quotechar = result.csv_dialect.quotechar
+                this.datasetInfo.csv_dialect.has_header = result.csv_dialect.has_header
+                this.rows = result.datarows
             });
          },
 

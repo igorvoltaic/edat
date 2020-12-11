@@ -51,12 +51,22 @@ def get_file_id() -> str:
     return str(uuid.uuid4())
 
 
-def get_tmpfilepath(file_id: str) -> Optional[str]:
-    """ Return file path based on file's id """
+def get_tmpfile_dirpath(file_id: str) -> Optional[str]:
+    """ Return file directory path based on file's id """
     tmp_file_dir = os.path.join(tmpdir(), file_id)
     try:
         glob.glob(f"{tmp_file_dir}/*.csv")[0]
         return tmp_file_dir
+    except IndexError:
+        return None
+
+
+def get_tmpfile_path(file_id: str) -> Optional[str]:
+    """ Return file path based on file's id """
+    tmp_file_dir = os.path.join(tmpdir(), file_id)
+    try:
+        tempfile = glob.glob(f"{tmp_file_dir}/*.csv")[0]
+        return tempfile
     except IndexError:
         return None
 

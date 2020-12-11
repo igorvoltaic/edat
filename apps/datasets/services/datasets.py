@@ -19,14 +19,15 @@ from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar
 from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.file_tools import create_temporary_file, get_file_id, \
-        move_tmpfile_to_media, get_tmpfilepath, get_dir_path
+        move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
+        get_tmpfile_path
 from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
 
 
 __all__ = [
     'get_dataset', 'get_all_datasets', 'read_csv',
     'create_dataset', 'delete_dataset', 'handle_uploaded_file',
-    'delete_tmpfile', 'edit_dataset'
+    'delete_tmpfile', 'edit_dataset', 'reread_uploaded_file'
 ]
 
 
@@ -81,6 +82,26 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
         num_pages=paginator.num_pages
     )
     return page_data
+
+
+def reread_uploaded_file(file_info: CreateDatasetDTO) -> CreateDatasetDTO:
+    file_id = file_info.file_id
+    filename = file_info.name
+    tempfile = get_tmpfile_path(file_id)
+    if not tempfile:
+        raise HTTPException(
+                status_code=503,
+                detail="Cannot read temporary file"
+        )
+    try:
+        updated_info = read_csv(filename, tempfile, file_info.csv_dialect)
+    except (ValidationError, StopIteration, ValueError) as invalid_file:
+        raise HTTPException(
+                status_code=400,
+                detail="Invalid filename or contents"
+        ) from invalid_file
+    create_dto = CreateDatasetDTO(**updated_info.dict(), file_id=file_id)
+    return create_dto
 
 
 def handle_uploaded_file(filename: str, file: bytes) -> CreateDatasetDTO:
@@ -244,7 +265,7 @@ def delete_dataset(dataset_id: int) -> Optional[DatasetInfoDTO]:
 
 def delete_tmpfile(file_id: str) -> Optional[str]:
     """ Delete tempfile """
-    tmp_file_dir = get_tmpfilepath(file_id)
+    tmp_file_dir = get_tmpfile_dirpath(file_id)
     if tmp_file_dir:
         shutil.rmtree(tmp_file_dir)
         logging.info("Temporary file with id %s was deleted", file_id)
