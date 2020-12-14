@@ -27,7 +27,7 @@ An OS tool should be set to crean `tmpdir/` once a day/hour in case there were i
 
 The Django app is available at `/` (e.g. `http://localhost:8000/django/admin/`)
 
-The FastAPI app is is available at `/api` (e.g. `http://localhost:8000/api/datasets/`)
+The FastAPI app is is available at `/api` (e.g. `http://localhost:8000/api/dataset/`)
 
 
 ## Code correctness

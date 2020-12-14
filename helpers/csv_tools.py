@@ -2,7 +2,6 @@
 """
 import csv
 from typing import Tuple, Type
-from django.conf import settings
 
 from apps.datasets.dtos import CsvDialectDTO
 
@@ -33,13 +32,3 @@ def examine_csv(
         dialect.quotechar = csv_dialect.quotechar.value
         has_header = csv_dialect.has_header
     return dialect, has_header
-
-
-def sample_rows_count(line_num: int) -> int:
-    """ helper which returns number of rows to read for data sample """
-    rows_count = settings.PREREAD_SAMPLE_ROWS
-    if line_num < rows_count:
-        # EXCLUDE top 2 rows: header + 1 row for datatype check_type(),
-        # because we already read them
-        rows_count = line_num - 2
-    return rows_count

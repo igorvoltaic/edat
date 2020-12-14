@@ -20,14 +20,14 @@ from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
         get_tmpfile_path, get_tmpfile_name
-from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
+from helpers.csv_tools import examine_csv, count_lines
 from helpers.exceptions import FileAccessError
 
 
 __all__ = [
     'read_dataset', 'get_all_datasets', 'read_csv',
-    'create_dataset', 'delete_dataset', 'handle_uploaded_file',
-    'delete_tmpfile', 'edit_dataset'
+    'create_dataset_entry', 'delete_dataset_entry', 'handle_uploaded_file',
+    'delete_tmpfile', 'edit_dataset_entry'
 ]
 
 
@@ -48,6 +48,9 @@ def read_dataset(
                              csv_dialect=csv_dialect)
         file_info.comment = dataset.comment
         if not dialect:
+            # In case we changed the delimiter number of columns
+            # has changed as well and there is no point in reading
+            # column types in the DB
             for index, _ in enumerate(zip(  # type: ignore
                 file_info.column_names,
                 file_info.column_types)
@@ -131,33 +134,40 @@ def read_csv(
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
-    file = open(filepath, 'r').read()
-    dialect, has_header = examine_csv(file, csv_dialect)
+    with open(filepath, 'r') as file:
+        data = file.read()
+    dialect, has_header = examine_csv(data, csv_dialect)
     if not csv_dialect:
         csv_dialect = CsvDialectDTO(
             delimiter=dialect.delimiter,
             quotechar=dialect.quotechar,
             has_header=has_header
         )
-    reader = csv.DictReader(file.split('\n'), dialect=dialect)
+    reader = csv.DictReader(data.split('\n'), dialect=dialect)
     fieldnames = reader.fieldnames
-    line_num = count_lines(file, has_header)
-    rows_to_read = sample_rows_count(line_num)
+    line_num = count_lines(data, has_header)
+    rows_to_read = settings.PREREAD_SAMPLE_ROWS
+    if rows_to_read < line_num:
+        # Deduct one line we will have to read to use with check_type()
+        rows_to_read = line_num - 1
     file_info = DatasetInfoDTO(
         name=filename,
         height=line_num,
         width=sum(1 for _ in fieldnames),
         column_names=fieldnames,
         column_types=[check_type(str(v)) for v in next(reader).values()],
-        datarows=[next(reader) for _ in range(rows_to_read)],
+        datarows=[next(reader) for _ in range(1, rows_to_read)],
         csv_dialect=csv_dialect
     )
     return file_info
 
 
 @transaction.atomic
-def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
-    """ Edit dataset Column DB models """
+def edit_dataset_entry(
+            dataset_id: int,
+            dto: DatasetDTO
+        ) -> Optional[DatasetDTO]:
+    """ Edit dataset Column types or dialect DB entries """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
     except Dataset.DoesNotExist:  # type: ignore
@@ -197,7 +207,7 @@ def edit_dataset(dataset_id: int, dto: DatasetDTO) -> Optional[DatasetDTO]:
 
 
 @transaction.atomic
-def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
+def create_dataset_entry(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
     """ Save new dataset to DB model """
     dataset = Dataset.objects.create(  # type: ignore
             name=file_info.name,
@@ -248,7 +258,7 @@ def create_dataset(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
 
 
 @transaction.atomic
-def delete_dataset(dataset_id: int) -> Optional[DatasetInfoDTO]:
+def delete_dataset_entry(dataset_id: int) -> Optional[DatasetInfoDTO]:
     """ Delete selected dataset """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore

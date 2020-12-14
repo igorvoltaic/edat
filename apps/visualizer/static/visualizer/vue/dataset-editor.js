@@ -91,7 +91,7 @@ export default {
                 method = 'POST'
             } else {
                 body.id = this.result.id
-                path = `/api/datasets/${this.id}`
+                path = `/api/dataset/${this.id}`
                 method = 'PUT'
             }
             body.comment = comment

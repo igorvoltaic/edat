@@ -23,7 +23,7 @@ export default {
         deleteDataset: function (event) {
             event.preventDefault();
             event.stopPropagation();
-            fetch(`/api/datasets/${this.dataset.id}`, {
+            fetch(`/api/dataset/${this.dataset.id}`, {
                 method: 'DELETE',
             })
             .then(() => {
@@ -37,7 +37,7 @@ export default {
         editDataset: function(event) {
             event.preventDefault();
             event.stopPropagation();
-            fetch(`/api/datasets/${this.dataset.id}`)
+            fetch(`/api/dataset/${this.dataset.id}`)
             .then(response => {
                 if (response.status !== 200) {
                     throw new Error('Dataset not found');
