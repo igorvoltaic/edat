@@ -11,6 +11,7 @@ from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
         DatasetInfoDTO, CsvDialectDTO
 
 from helpers.auth_tools import login_required
+from helpers.exceptions import FileAccessError
 
 
 api_router = APIRouter()
@@ -51,7 +52,13 @@ def upload_dataset_file(request: Request, file: UploadFile = File(...)):
     if file.filename.split('.')[-1] != "csv" \
             or file.content_type != "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
-    file_info = handle_uploaded_file(file.filename, file.file.read())
+    try:
+        file_info = handle_uploaded_file(file.filename, file.file.read())
+    except FileAccessError as e:
+        raise HTTPException(
+                    status_code=503,
+                    detail=e.message
+        )
     return file_info
 
 
@@ -69,7 +76,13 @@ def reread_dataset(request: Request, dataset_id: int, body: CsvDialectDTO):
 @login_required
 def reread_tmpfile(request: Request, file_id: str, dialect: CsvDialectDTO):
     """ Create new dataset DB entry and return dataset info """
-    dataset = handle_uploaded_file(file_id=file_id, dialect=dialect)
+    try:
+        dataset = handle_uploaded_file(file_id=file_id, dialect=dialect)
+    except FileAccessError as e:
+        raise HTTPException(
+                    status_code=503,
+                    detail=e.message
+        )
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset amendment error")
     return dataset

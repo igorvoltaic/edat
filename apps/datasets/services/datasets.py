@@ -21,6 +21,7 @@ from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
         get_tmpfile_path, get_tmpfile_name
 from helpers.csv_tools import sample_rows_count, examine_csv, count_lines
+from helpers.exceptions import FileAccessError
 
 
 __all__ = [
@@ -103,21 +104,21 @@ def handle_uploaded_file(
         tempfile = get_tmpfile_path(file_id)
         filename = get_tmpfile_name(file_id)
         if not tempfile:
-            raise Exception("Cannot read temporary file")
+            raise FileAccessError("Cannot read temporary file")
     elif file and filename:
         file_id = get_file_id()
         try:
             tempfile = create_temporary_file(filename, file_id, file)
             logging.info("Temporary file with id %s was created", file_id)
-        except (FileExistsError, OSError) as tmpfile_error:
-            raise Exception("Cannot save temporary file") from tmpfile_error
+        except (FileExistsError, OSError) as e:
+            raise FileAccessError("Cannot save temporary file") from e
     try:
         if file_id:
             file_info = read_csv(filename, tempfile, dialect)  # type: ignore
         else:
             file_info = read_csv(filename, tempfile)  # type: ignore
-    except (ValidationError, StopIteration, ValueError) as invalid_file:
-        raise Exception("Invalid filename or contents") from invalid_file
+    except (ValidationError, StopIteration, ValueError) as e:
+        raise FileAccessError("Invalid filename or contents") from e
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
 
