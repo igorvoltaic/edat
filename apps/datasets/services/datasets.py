@@ -146,7 +146,7 @@ def read_csv(
     reader = csv.DictReader(data.split('\n'), dialect=dialect)
     fieldnames = reader.fieldnames
     line_num = count_lines(data, has_header)
-    rows_to_read = settings.PREREAD_SAMPLE_ROWS
+    rows_to_read = settings.SAMPLE_ROW_COUNT
     if rows_to_read < line_num:
         # Deduct one line we will have to read to use with check_type()
         rows_to_read = line_num - 1
