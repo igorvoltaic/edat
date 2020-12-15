@@ -1,7 +1,7 @@
 """ Helper funciton to get line count of csv file
 """
 import csv
-from typing import Tuple, Type
+from typing import Tuple, Type, Optional, List, Sequence
 
 from apps.datasets.dtos import CsvDialectDTO
 
@@ -32,3 +32,10 @@ def examine_csv(
         dialect.quotechar = csv_dialect.quotechar.value
         has_header = csv_dialect.has_header
     return dialect, has_header
+
+
+def handle_duplicate_fieldnames(fieldnames: Sequence[str]) -> Optional[List]:
+    if len(fieldnames) > len(set(fieldnames)):
+        keys = [i for i in range(len(fieldnames))]
+        return keys
+    return None

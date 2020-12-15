@@ -56,6 +56,7 @@
         <div id="csv-config-menu" class="" :class="{ hidden: isHidden }">
             <div id="csv-config-menu-header"><h2>CSV configuration</h2></div>
             <div class="ui labeled input">
+                Delimiter: 
                 <select class="type-dropdown" name="delimiter" id="csv-delimiter">
                     <option
                         v-for="delimiter in delimiters" 
@@ -64,6 +65,7 @@
                 </select>
             </div>
             <div class="ui labeled input">
+                <span>Quotechar: </span>
                 <select class="type-dropdown" name="quotechar" id="csv-quotechar">
                     <option
                         v-for="quotechar in quotechars" 
@@ -72,6 +74,7 @@
                 </select>
             </div>
             <div class="ui labeled input">
+                <span>Has header: </span>
                 <select class="type-dropdown" name="header" id="csv-has-header">
                     <option
                         v-for="header in has_header" 

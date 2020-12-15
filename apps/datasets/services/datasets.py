@@ -20,7 +20,8 @@ from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
         get_tmpfile_path, get_tmpfile_name
-from helpers.csv_tools import examine_csv, count_lines
+from helpers.csv_tools import examine_csv, count_lines, \
+        handle_duplicate_fieldnames
 from helpers.exceptions import FileAccessError
 
 
@@ -144,10 +145,16 @@ def read_csv(
             has_header=has_header
         )
     reader = csv.DictReader(data.split('\n'), dialect=dialect)
+    # return column keys along fieldnames in case dataset
+    # has duplicate column names
     fieldnames = reader.fieldnames
+    if reader.fieldnames:
+        keys = handle_duplicate_fieldnames(reader.fieldnames)
+        if keys:
+            reader.fieldnames = keys
     line_num = count_lines(data, has_header)
     rows_to_read = settings.SAMPLE_ROW_COUNT
-    if rows_to_read < line_num:
+    if line_num < rows_to_read:
         # Deduct one line we will have to read to use with check_type()
         rows_to_read = line_num - 1
     file_info = DatasetInfoDTO(

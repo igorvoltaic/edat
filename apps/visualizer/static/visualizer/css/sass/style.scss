@@ -18,17 +18,22 @@
     box-shadow: 0px 3px 30px 5px #444;
 
     div#csv-config-menu-header {
-        margin-bottom: 1em;
+        margin-bottom: 2em;
         margin-top: -1em;
     }
 
-    #csv-config-menu-buttons {
+    div.ui.labeled.input {
+        width: 60%;
+        margin-bottom: 1em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        line-height: 2em;
 
     }
 
-    div {
-        width: 60%;
-        margin-bottom: 1em;
+    #csv-config-menu-buttons {
+        margin-top: 2em;
     }
 }
 .dataset-editor-header{
@@ -141,6 +146,9 @@ div#home-container {
 }
 
 div#data-table {
+
+    overflow-x: scroll;
+    border-right: 1px solid rgba(34,36,38,.15);
 
     table {
 

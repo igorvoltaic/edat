@@ -31,7 +31,7 @@ export default {
             if (q) {
                 searchString = '&query=' + document.querySelector('#search').value
             }
-            fetch(`/api/datasets?page=${p}${searchString}`)
+            fetch(`/api/dataset?page=${p}${searchString}`)
             .then(response => response.json())
             .then(result => {
                 this.datasets = result.datasets;
@@ -49,7 +49,7 @@ export default {
             var data = new FormData()
             const fileInput = document.querySelector('#upload-csv-file');
             data.append('file', fileInput.files[0]);
-            fetch('/api/datasets', {
+            fetch('/api/dataset', {
                 method: 'POST',
                 body: data,
             })
