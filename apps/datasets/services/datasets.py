@@ -145,8 +145,7 @@ def read_csv(
             has_header=has_header
         )
     reader = csv.DictReader(data.split('\n'), dialect=dialect)
-    # return column keys along fieldnames in case dataset
-    # has duplicate column names
+    # return column keys in case dataset has duplicate column names
     fieldnames = reader.fieldnames
     if reader.fieldnames:
         keys = handle_duplicate_fieldnames(reader.fieldnames)

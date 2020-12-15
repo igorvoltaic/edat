@@ -35,7 +35,10 @@ def examine_csv(
 
 
 def handle_duplicate_fieldnames(fieldnames: Sequence[str]) -> Optional[List]:
+    """ compare list of fieldnames with set of unique field names length and
+        return keys for fields in case the first one is longer
+    """
     if len(fieldnames) > len(set(fieldnames)):
-        keys = [i for i in range(len(fieldnames))]
+        keys = list(i for i in range(len(fieldnames)))
         return keys
     return None
