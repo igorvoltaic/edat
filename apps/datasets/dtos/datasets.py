@@ -38,6 +38,7 @@ class CsvDialectDTO(BaseModel):
     delimiter: Delimiter
     quotechar: Quotechar
     has_header: bool
+    start_row: Optional[int]
 
     class Config:
         orm_mode = True

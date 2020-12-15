@@ -82,6 +82,12 @@
                         :selected="header.value === datasetInfo.csv_dialect.has_header">[[ header.name ]]</option>
                 </select>
             </div>
+            <div class="ui labeled input">
+                <div class="ui label">
+                    Start row
+                </div>
+                <input id="csv-start-row" type="text" value="" placeholder="Input">
+            </div>
             <div id="csv-config-menu-buttons">
                 <button @click="reReadFile();isHidden = true" class="ui button gray">Re-read file</button>
                 <button @click="isHidden = true" class="ui button gray">Cancel</button>

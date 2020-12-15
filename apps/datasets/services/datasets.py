@@ -154,15 +154,19 @@ def read_csv(
     line_num = count_lines(data, has_header)
     rows_to_read = settings.SAMPLE_ROW_COUNT
     if line_num < rows_to_read:
-        # Deduct one line we will have to read to use with check_type()
-        rows_to_read = line_num - 1
+        rows_to_read = line_num
+    datarows = [next(reader) for _ in range(1, rows_to_read)]
+    start_row = 0
+    if csv_dialect.start_row:
+        start_row = csv_dialect.start_row
+    column_types = [check_type(str(v)) for v in datarows[start_row].values()]
     file_info = DatasetInfoDTO(
         name=filename,
         height=line_num,
         width=sum(1 for _ in fieldnames),
         column_names=fieldnames,
-        column_types=[check_type(str(v)) for v in next(reader).values()],
-        datarows=[next(reader) for _ in range(1, rows_to_read)],
+        column_types=column_types,
+        datarows=datarows,
         csv_dialect=csv_dialect
     )
     return file_info
@@ -206,6 +210,7 @@ def edit_dataset_entry(
     csv_dialect.delimiter = Delimiter(dto.csv_dialect.delimiter)
     csv_dialect.quotechar = Quotechar(dto.csv_dialect.quotechar)
     csv_dialect.has_header = dto.csv_dialect.has_header
+    csv_dialect.start_row = dto.csv_dialect.start_row
     csv_dialect.save()
     dataset.comment = dto.comment
     dataset.save()
@@ -236,7 +241,8 @@ def create_dataset_entry(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
             dataset_id=dataset.id,
             delimiter=Delimiter(file_info.csv_dialect.delimiter),
             quotechar=Quotechar(file_info.csv_dialect.quotechar),
-            has_header=file_info.csv_dialect.has_header
+            has_header=file_info.csv_dialect.has_header,
+            start_row=file_info.csv_dialect.start_row
         )
         csv_dialect.save()
     except ValueError:

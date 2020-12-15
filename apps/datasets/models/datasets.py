@@ -30,6 +30,7 @@ class CsvDialect(models.Model):
     delimiter = EnumChoiceField(Delimiter)
     quotechar = EnumChoiceField(Quotechar)
     has_header = models.BooleanField()
+    start_row = models.IntegerField(null=True)
 
 
 class Column(models.Model):

@@ -119,6 +119,11 @@ export default {
             body.delimiter = document.querySelector('#csv-delimiter').value
             body.quotechar = document.querySelector('#csv-quotechar').value
             body.has_header = document.querySelector('#csv-has-header').value
+            if (body.start_row = document.querySelector('#csv-start-row').value.length > 0) {
+                body.start_row = document.querySelector('#csv-start-row').value
+            } else {
+                body.start_row = null
+            }
             fetch(path, {
                 method: 'POST',
                 body: JSON.stringify(body)
