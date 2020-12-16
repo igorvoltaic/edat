@@ -61,7 +61,7 @@
 </script>
 
 <script type="text/x-template" id="dataset-list-item-template">
-	<tr @click="" class="datasetListRow">
+	<tr @click="openDataset(dataset.id)" class="datasetListRow">
 		<td data-id="dataset.id" class="dataset-name">[[ dataset.name ]]</td>
 		<td class="right aligned">[[ formattedDate(dataset.timestamp) ]]</td>
 		<td>[[ dataset.height ]]x[[dataset.width]]</td>

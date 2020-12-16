@@ -30,9 +30,8 @@ export default {
                 this.$parent.fetchDatasets("1")
             })
         },
-        openDataset: function() {
-            let datasetId = this.dataset.id
-            router.push({ name: 'dataset', params: { id: datasetId } }) // -> /dataset/:id
+        openDataset: function(datasetId) {
+            router.push({ name: 'dataset', params: { id: datasetId } })
         },
         editDataset: function(event) {
             event.preventDefault();

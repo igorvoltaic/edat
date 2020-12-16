@@ -3,6 +3,4 @@ export default {
     template: '#dataset-editor-datarow-template',
     delimiters: ['[[',']]'],
     props: ['data'],
-    components: {
-    },
 }

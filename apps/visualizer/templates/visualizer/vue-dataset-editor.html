@@ -1,10 +1,6 @@
 {% load static %}
 
 {% block dataset_editor %}
-
-
-{# Vue templates #}
-
 <script type="text/x-template" id="dataset-editor-template">
     <div id="home-container" class="ui container">
         <div class="dataset-editor-header">
@@ -100,4 +96,5 @@
     <tr>
 		<td v-for="d in data" class="center aligned">[[ d ]]</td> 
     </tr>
-</script>{% endblock %}
+</script>
+{% endblock %}

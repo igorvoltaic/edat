@@ -18,6 +18,8 @@
 
     {% block dataset_editor %}{% endblock %}
     {% include "visualizer/vue-dataset-editor.html" %}
+    {% block dataset_render %}{% endblock %}
+    {% include "visualizer/vue-dataset-render.html" %}
 {% endif %}
 
 {% block navigation %}{% endblock %}

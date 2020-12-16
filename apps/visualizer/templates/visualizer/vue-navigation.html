@@ -22,7 +22,7 @@
 </script>
 
 <script type="text/x-template" id="navbar-link-template">
-        <router-link v-if="link.name !== 'dataset'" :to="{ name: link.name }">[[ link.meta ]]</router-link>
+        <router-link v-if="link.name !== ('dataset' || 'editor')" :to="{ name: link.name }">[[ link.meta ]]</router-link>
 </script>
 
 {% endblock %}

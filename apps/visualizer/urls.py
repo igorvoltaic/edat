@@ -10,4 +10,9 @@ urlpatterns = [
     path('logout', views.logout_view, name='logout'),
     path('register', views.register, name='register'),
 
+    # VueJs paths
+    path('dataset/<int:id>', views.index),
+    path('editor/<int:id>', views.index),
+    path('editor/<str:id>', views.index),
+
 ]

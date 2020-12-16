@@ -1,0 +1,41 @@
+{% load static %}
+
+{% block dataset_render %}
+<script type="text/x-template" id="dataset-render-template">
+    <div id="home-container" class="ui container">
+        <h1>[[ datasetInfo.name ]]</h1>
+        <div class="ui simple selection dropdown">
+            <input type="hidden" name="gender">
+            <i class="dropdown icon"></i>
+            <div class="default text">Gender</div>
+            <div class="menu">
+                <div 
+                 v-for="name in datasetInfo.column_names" 
+                 v-if="name.length > 0" 
+                 class="item" 
+                 @click="selectItem($event, name)"
+                 :name="name">[[ name ]]</div>
+            </div>
+        </div>
+		<div id="data-table" class="ui container">
+			<table class="ui celled striped table">
+				<thead>
+                    <tr>
+						<th v-for="column_name in datasetInfo.column_names" 
+                         class="center aligned">[[ column_name ]]</th> 
+					</tr> 
+                    <tr>
+						<th v-for="column_type in datasetInfo.column_types" 
+                         class="center aligned">[[ column_type ]]</th> 
+					</tr> 
+				</thead>
+			    <tbody>
+                    <dataset-editor-datarow
+                     v-for="row in rows" :key="row.index" :data="row">
+					</dataset-editor-datarow>
+			  </tbody>
+			</table>
+		</div>
+    </div>
+</script>
+{% endblock %}

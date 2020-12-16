@@ -9,7 +9,7 @@ from .models import User
 
 
 @login_required
-def index(request):
+def index(request, id=None):
     return render(request, "visualizer/index.html")
 
 
