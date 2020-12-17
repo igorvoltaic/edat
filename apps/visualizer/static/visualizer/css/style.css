@@ -48,6 +48,7 @@
 }
 .dataset-render-header img {
   margin-right: 2em;
+  max-width: 80%;
 }
 
 .dataset-editor-header {

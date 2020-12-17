@@ -45,8 +45,9 @@ def render_plot(
        data=data,
        kind="box"
     )
+    dpi = 300
     try:
-        plt.savefig(image_path, bbox_inches='tight')
+        plt.savefig(image_path, bbox_inches='tight', figsize=(1200/dpi, 1200/dpi), dpi=dpi)
     except (FileExistsError, OSError) as e:
         raise FileAccessError("Cannot read dataset file") from e
     return image_path
