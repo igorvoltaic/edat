@@ -7,6 +7,7 @@ from tempfile import gettempdir
 from typing import Optional
 
 from django.conf import settings
+from helpers.exceptions import FileAccessError
 
 
 def mediadir():
@@ -82,13 +83,23 @@ def get_tmpfile_path(file_id: str) -> Optional[str]:
         return None
 
 
-def move_tmpfile_to_media(file_id: str) -> Optional[str]:
+def move_tmpfile_to_media(file_id: str, dataset_id: int) -> Optional[str]:
     """ Move file and return full file path """
-    tmpdirpath = os.path.join(tmpdir(), file_id)
-    dst = mediadir()
-    try:
-        media_file_dir = shutil.move(tmpdirpath, dst)
-    except OSError:
+    src = get_tmpfile_path(file_id)
+    if not src:
+        FileAccessError("Cannot find temporary file")
         return None
-    media_file_path = glob.glob(f"{media_file_dir}/*.csv")[0]
-    return media_file_path
+    filename = os.path.split(src)[1]
+    dst_dir = os.path.join(mediadir(), str(dataset_id))
+    os.mkdir(dst_dir)
+    dst = os.path.join(dst_dir, filename)
+    try:
+        dst = shutil.move(src, dst)
+    # For permission related errors
+    except FileNotFoundError:
+        FileAccessError("Cannot move temporary file")
+    except PermissionError:
+        FileAccessError("Temporary file moving is not permitted.")
+    except OSError:
+        FileAccessError("Cannot move temporary file")
+    return dst

@@ -114,6 +114,9 @@ STATICFILES_FINDERS = (
 
 STATIC_URL = '/static/'
 
+MEDIA_URL = '/media/'
+
+
 PROJECT_NAME = "edat"
 
 ITEMS_PER_PAGE = 7

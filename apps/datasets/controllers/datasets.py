@@ -1,14 +1,14 @@
 """ Dataset app controller layer
 """
-from fastapi import APIRouter, HTTPException, File, UploadFile, Request
+from fastapi import APIRouter, HTTPException, File, UploadFile, Request, Form
 from fastapi.responses import JSONResponse
 
 from apps.datasets.services import get_all_datasets, read_dataset, \
     handle_uploaded_file, delete_tmpfile, edit_dataset_entry, \
-    create_dataset_entry, delete_dataset_entry
+    create_dataset_entry, delete_dataset_entry, get_plot_img
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
-        DatasetInfoDTO, CsvDialectDTO
+        DatasetInfoDTO, CsvDialectDTO, DatasetPlotDTO
 
 from helpers.auth_tools import login_required
 from helpers.exceptions import FileAccessError
@@ -64,9 +64,9 @@ def upload_dataset_file(request: Request, file: UploadFile = File(...)):
 
 @api_router.post("/reread/{dataset_id}", response_model=DatasetDTO)
 @login_required
-def reread_dataset(request: Request, dataset_id: int, body: CsvDialectDTO):
+def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
     """ Re-read dataset file using new user-supplied csv dialect """
-    dataset = read_dataset(dataset_id, body)  # type: ignore
+    dataset = read_dataset(dataset_id, dialect)  # type: ignore
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset amendment error")
     return dataset
@@ -116,3 +116,13 @@ def delete_temparary_file(request: Request, file_id: str):
     if not deleted_file_id:
         raise HTTPException(status_code=404, detail="File not found")
     return JSONResponse(content={"message": "submission cancelled"})
+
+
+@api_router.post("/render")  # , response_model=str)
+@login_required
+def draw_dataset_plot(request: Request, body: DatasetPlotDTO):
+    """ Return a page with dataset list """
+    plot_img_path = get_plot_img(body.id, body.x_axis, body.y_axis)
+    if not plot_img_path:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    return {"plot_img_path": f"/{plot_img_path}"}

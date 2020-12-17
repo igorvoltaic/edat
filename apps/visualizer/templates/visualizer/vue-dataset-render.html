@@ -3,20 +3,37 @@
 {% block dataset_render %}
 <script type="text/x-template" id="dataset-render-template">
     <div id="home-container" class="ui container">
-        <h1>[[ datasetInfo.name ]]</h1>
-        <div class="ui simple selection dropdown">
-            <input type="hidden" name="gender">
+        <div class="dataset-render-header">
+            <h1>[[ datasetInfo.name ]]</h1>
+            <img v-if="plotImgPath" :src="plotImgPath">
+        </div>
+        <div class="ui simple selection dropdown column-name-dropdown">
+            <input type="hidden" name="y_axis">
             <i class="dropdown icon"></i>
-            <div class="default text">Gender</div>
+            <div class="default text">Y-axis</div>
             <div class="menu">
                 <div 
-                 v-for="name in datasetInfo.column_names" 
-                 v-if="name.length > 0" 
-                 class="item" 
-                 @click="selectItem($event, name)"
-                 :name="name">[[ name ]]</div>
+                v-for="name in datasetInfo.column_names" 
+                v-if="name.length > 0" 
+                class="item" 
+                @click="selectItem($event, name)"
+                :fieldname="name">[[ name ]]</div>
             </div>
         </div>
+        <div class="ui simple selection dropdown column-name-dropdown">
+            <input type="hidden" name="x_axis">
+            <i class="dropdown icon"></i>
+            <div class="default text">X-axis</div>
+            <div class="menu">
+                <div 
+                v-for="name in datasetInfo.column_names" 
+                v-if="name.length > 0" 
+                class="item" 
+                @click="selectItem($event, name)"
+                :fieldname="name">[[ name ]]</div>
+            </div>
+        </div>
+        <button @click="renderDataset" class="ui button green" type="submit">Render</button>
 		<div id="data-table" class="ui container">
 			<table class="ui celled striped table">
 				<thead>

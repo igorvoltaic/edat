@@ -2,6 +2,11 @@
     display: none !important;
 }
 
+.column-name-dropdown {
+    margin-bottom: 1em;
+    margin-right: 0.5em;
+}
+
 #csv-config-menu {
     position: absolute;
     background-color: #fff;
@@ -36,7 +41,23 @@
         margin-top: 2em;
     }
 }
-.dataset-editor-header{
+
+.dataset-render-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1em;
+    
+    h1 {
+        margin: 0;
+    }
+    
+    img {
+        margin-right: 2em;
+    }
+
+}
+
+.dataset-editor-header {
     display: flex;
     align-items: center;
     justify-content: space-between;

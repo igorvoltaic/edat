@@ -3,12 +3,12 @@
 from enum import Enum
 from typing import Optional, List, Dict
 from datetime import datetime
-from pydantic import BaseModel, Field, conint, constr
+from pydantic import BaseModel, Field, constr
 
 
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
-    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar'
+    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'DatasetPlotDTO'
 ]
 
 
@@ -80,3 +80,16 @@ class PageDTO(BaseModel):
     has_prev: bool
     page_num: int
     num_pages: int
+
+
+class DatasetPlotDTO(BaseModel):
+    """ transfer object for data which must be
+        provided in order to create a dataset plot
+    """
+    id: int
+    x_axis: str
+    y_axis: str
+    kind: Optional[str]
+    col: Optional[str]
+    col_wrap: Optional[int]
+    row: Optional[str]
