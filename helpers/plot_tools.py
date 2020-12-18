@@ -1,10 +1,12 @@
 """ Set of helper function to generate plots based on dataset data """
 import os
+from typing import Optional
+
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from typing import Optional
+from django.conf import settings
 
 from apps.datasets.dtos import CsvDialectDTO
 
@@ -13,6 +15,14 @@ from helpers.file_tools import get_dir_path
 
 
 matplotlib.use('Agg')
+
+DPI = settings.PLOT_IMG_DPI
+
+
+def pixel(px_size: int) -> int:
+    """ Take size in pixels and return size value accepted by matplotlib """
+    size = px_size/DPI
+    return size
 
 
 def render_plot(
@@ -45,9 +55,12 @@ def render_plot(
        data=data,
        kind="box"
     )
-    dpi = 300
     try:
-        plt.savefig(image_path, bbox_inches='tight', figsize=(1200/dpi, 1200/dpi), dpi=dpi)
+        plt.savefig(
+                image_path,
+                bbox_inches='tight',
+                figsize=(pixel(1200), pixel(1200), dpi=DPI)
+            )
     except (FileExistsError, OSError) as e:
         raise FileAccessError("Cannot read dataset file") from e
     return image_path

@@ -3,7 +3,7 @@
 from django.db import models
 from django_enum_choices.fields import EnumChoiceField
 
-from apps.datasets.dtos import ColumnType, Delimiter, Quotechar
+from apps.datasets.dtos import ColumnType, Delimiter, Quotechar, PlotType
 
 
 class Dataset(models.Model):
@@ -21,7 +21,7 @@ class Dataset(models.Model):
 
 
 class CsvDialect(models.Model):
-    """ CSV file delimiter, quotechar and has_header information"""
+    """ CSV file delimiter, quotechar and has_header information """
     dataset = models.OneToOneField(
         Dataset,
         on_delete=models.CASCADE,
@@ -43,3 +43,21 @@ class Column(models.Model):
     index = models.IntegerField()
     name = models.CharField(max_length=50, blank=True)
     datatype = EnumChoiceField(ColumnType)
+
+
+class Plot(models.Model):
+    datatype = EnumChoiceField(PlotType)
+    checksum = models.CharField()
+    height = models.IntegerField()
+    width = models.IntegerField()
+    dataset = models.ForeignKey(
+        Dataset,
+        on_delete=models.CASCADE,
+        related_name="plots"
+    )
+    columns = models.ManyToManyField('Column')
+    params = models.JSONField()
+    file = models.FileField(null=True)
+    indexes = [
+        models.Index(fields=['checksum']),
+    ]

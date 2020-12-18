@@ -1,6 +1,7 @@
 """ Dataset app controller layer
 """
-from fastapi import APIRouter, HTTPException, File, UploadFile, Request, Form
+from fastapi import APIRouter, HTTPException, File, UploadFile, Request, \
+        Response
 from fastapi.responses import JSONResponse
 
 from apps.datasets.services import get_all_datasets, read_dataset, \
@@ -88,7 +89,7 @@ def reread_tmpfile(request: Request, file_id: str, dialect: CsvDialectDTO):
     return dataset
 
 
-@api_router.post("/create", response_model=DatasetDTO)
+@api_router.post("/create", response_model=DatasetDTO, status_code=201)
 @login_required
 def create_dataset(request: Request, file_info: CreateDatasetDTO):
     """ Create new dataset DB entry and return dataset info """
@@ -118,11 +119,22 @@ def delete_temparary_file(request: Request, file_id: str):
     return JSONResponse(content={"message": "submission cancelled"})
 
 
-@api_router.post("/render")  # , response_model=str)
+@api_router.post("/render", status_code=204)
 @login_required
-def draw_dataset_plot(request: Request, body: DatasetPlotDTO):
+def draw_dataset_plot(
+            request: Request,
+            response: Response,
+            body: DatasetPlotDTO
+        ):
     """ Return a page with dataset list """
-    plot_img_path = get_plot_img(body.id, body.x_axis, body.y_axis)
+    try:
+        plot_img_path = get_plot_img(body.id, body.x_axis, body.y_axis)
+    except FileAccessError as e:
+        raise HTTPException(
+                    status_code=503,
+                    detail=e.message
+        )
     if not plot_img_path:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    return {"plot_img_path": f"/{plot_img_path}"}
+        raise HTTPException(status_code=422, detail="Plot creation error")
+    response.headers["Content-Location"] = plot_img_path
+    return response

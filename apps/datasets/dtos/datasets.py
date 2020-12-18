@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field, constr
 
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
-    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'DatasetPlotDTO'
+    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'DatasetPlotDTO',
+    'PlotType'
 ]
 
 
@@ -32,6 +33,26 @@ class Delimiter(str, Enum):
 class Quotechar(str, Enum):
     SINGLE = "'"
     DOUBLE = '"'
+
+
+class PlotType(str, Enum):
+    """ Supported plot types """
+    # Categorical plots used by seaborn.catplot()
+    STRIP = "strip"
+    SWARM = "swarm"
+    BOX = "box"
+    VIOLIN = "violin"
+    BOXEN = "boxen"
+    POINT = "point"
+    BAR = "bar"
+    COUNT = "count"
+    # Relationship plots used by seaborn.relplot()
+    SCATTER = "scatter"
+    LINE = "line"
+    # Distribution plots used by seaborn.relplot()
+    HIST = "hist"
+    KDE = "kde"
+    ECDF = "ecdf"
 
 
 class CsvDialectDTO(BaseModel):
@@ -82,14 +103,12 @@ class PageDTO(BaseModel):
     num_pages: int
 
 
-class DatasetPlotDTO(BaseModel):
+class CreatePlotDTO(BaseModel):
     """ transfer object for data which must be
         provided in order to create a dataset plot
     """
-    id: int
+    dataset_id: int
     x_axis: str
     y_axis: str
-    kind: Optional[str]
-    col: Optional[str]
-    col_wrap: Optional[int]
-    row: Optional[str]
+    plot_type: Optional[PlotType]
+    params: Optional[str]

@@ -116,8 +116,8 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 
-
 PROJECT_NAME = "edat"
 
 ITEMS_PER_PAGE = 7
 SAMPLE_ROW_COUNT = 21
+PLOT_IMG_DPI = 300
