@@ -34,8 +34,7 @@ def pixel(px_size: int) -> int:
 
 def render_plot(
         csv_file: str,
-        x_axis: str,
-        y_axis: str,
+        plot_params: CreatePlotDTO,
         dialect: Optional[CsvDialectDTO] = None) -> str:
     """ Take filepath and axis selections and return plot img filepath """
     dataset_dir = get_dir_path(csv_file)
