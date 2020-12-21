@@ -2,6 +2,7 @@
 """
 import csv
 import datetime
+import hashlib
 import logging
 import os
 import shutil
@@ -15,15 +16,16 @@ from django.conf import settings
 from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
-        DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar
-from apps.datasets.models import Dataset, Column, CsvDialect
+        DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
+        PlotDTO, CreatePlotDTO
+from apps.datasets.models import Dataset, Column, CsvDialect, Plot
 from helpers.csv_tools import examine_csv, count_lines, \
         handle_duplicate_fieldnames
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
         get_tmpfile_path, get_tmpfile_name
-from helpers.plot_tools import render_plot
+from helpers.plot_tools import render_plot, get_plot_hash
 
 
 __all__ = [
@@ -296,16 +298,20 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
     return None
 
 
-def get_plot_img(dataset_id: int, x_axis: str, y_axis: str) -> Optional[str]:
+def get_plot_img(plot_dto: CreatePlotDTO) -> Optional[PlotDTO]:
     """ Service reads dataset file, drows plot with supplied X and Y axis info
         and returns plot file path
     """
     try:
-        dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
-        plot_img_path = render_plot(
-                dataset.file.name,
-                x_axis, y_axis,
-                dataset.csv_dialect)
+        dataset = Dataset.objects.get(pk=plot_dto.dataset_id)  # type: ignore
+        hash = get_plot_hash(plot_dto)
+        plot = dataset.plots.get(checksum=hash)
+        if not plot:
+            plot_img_path = render_plot(
+                    dataset.file.name,
+                    x_axis, y_axis,
+                    dataset.csv_dialect)
+            plot = Plot.objects.create()  # type: ignore
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return plot_img_path

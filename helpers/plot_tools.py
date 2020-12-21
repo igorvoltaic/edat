@@ -1,5 +1,6 @@
 """ Set of helper function to generate plots based on dataset data """
 import os
+import hashlib
 from typing import Optional
 
 import matplotlib
@@ -8,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from django.conf import settings
 
-from apps.datasets.dtos import CsvDialectDTO
+from apps.datasets.dtos import CsvDialectDTO, CreatePlotDTO
 
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import get_dir_path
@@ -17,6 +18,12 @@ from helpers.file_tools import get_dir_path
 matplotlib.use('Agg')
 
 DPI = settings.PLOT_IMG_DPI
+
+
+def get_plot_hash(dto: CreatePlotDTO) -> str:
+    """ return DTO's md5 hash """
+    hash_object = hashlib.md5(str(dto).encode())
+    return hash_object.hexdigest()
 
 
 def pixel(px_size: int) -> int:
@@ -59,8 +66,9 @@ def render_plot(
         plt.savefig(
                 image_path,
                 bbox_inches='tight',
-                figsize=(pixel(1200), pixel(1200), dpi=DPI)
-            )
+                )
+#                figsize=(pixel(1200), pixel(1200), dpi=DPI)
+#            )
     except (FileExistsError, OSError) as e:
         raise FileAccessError("Cannot read dataset file") from e
     return image_path

@@ -1,3 +1,6 @@
+ @use "select";
+
+
 .hidden {
     display: none !important;
 }
@@ -49,11 +52,29 @@
     
     h1 {
         margin: 0;
+        margin-bottom: 0.7em;
+    }
+
+    div.render-options {
+        display: flex;
+        flex-direction: column;
+    }
+
+    div#rendered-plot {
+        max-width: 600px;
+        min-width: 600px;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     img {
         margin-right: 2em;
         max-width: 80%;
+        animation-name: show;
+        animation-duration: 3s;
+        animation-fill-mode: forwards;
     }
 
 }
@@ -218,3 +239,23 @@ div#data-table {
         }
     }
 }
+
+
+@keyframes show {
+    0% {
+        opacity: 0;
+        max-width: 0%;
+        height: auto;
+    }
+    25% {
+        opacity: 0;
+        max-width: 100%;
+        height: auto;
+    }
+    100% {
+        opacity: 1;
+        max-width: 100%;
+        height: auto;
+    }
+}
+

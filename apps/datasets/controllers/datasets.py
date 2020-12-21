@@ -9,7 +9,7 @@ from apps.datasets.services import get_all_datasets, read_dataset, \
     create_dataset_entry, delete_dataset_entry, get_plot_img
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
-        DatasetInfoDTO, CsvDialectDTO, DatasetPlotDTO
+        DatasetInfoDTO, CsvDialectDTO, CreatePlotDTO, PlotDTO
 
 from helpers.auth_tools import login_required
 from helpers.exceptions import FileAccessError
@@ -124,11 +124,18 @@ def delete_temparary_file(request: Request, file_id: str):
 def draw_dataset_plot(
             request: Request,
             response: Response,
-            body: DatasetPlotDTO
+            body: CreatePlotDTO
         ):
     """ Return a page with dataset list """
     try:
-        plot_img_path = get_plot_img(body.id, body.x_axis, body.y_axis)
+        plot_img_path = get_plot_img(
+                body.id,
+                body.height,
+                body.width,
+                body.plot_type,
+                body.params,
+                body.columns,
+        )
     except FileAccessError as e:
         raise HTTPException(
                     status_code=503,

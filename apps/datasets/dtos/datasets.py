@@ -8,8 +8,8 @@ from pydantic import BaseModel, Field, constr
 
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
-    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'DatasetPlotDTO',
-    'PlotType'
+    'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'PlotType',
+    'CreatePlotDTO', 'PlotDTO'
 ]
 
 
@@ -108,7 +108,20 @@ class CreatePlotDTO(BaseModel):
         provided in order to create a dataset plot
     """
     dataset_id: int
-    x_axis: str
-    y_axis: str
+    height: int
+    width: int
     plot_type: Optional[PlotType]
     params: Optional[str]
+    columns: List[str]
+
+    class Config:
+        orm_mode = True
+
+
+class PlotDTO(CreatePlotDTO):
+    """ transfer object for dataset plot """
+    id: int
+    file: str
+
+    class Config:
+        orm_mode = True

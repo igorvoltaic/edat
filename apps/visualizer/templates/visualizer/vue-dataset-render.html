@@ -4,36 +4,41 @@
 <script type="text/x-template" id="dataset-render-template">
     <div id="home-container" class="ui container">
         <div class="dataset-render-header">
-            <h1>[[ datasetInfo.name ]]</h1>
-            <img v-if="plotImgPath" :src="plotImgPath">
-        </div>
-        <div class="ui simple selection dropdown column-name-dropdown">
-            <input type="hidden" name="y_axis">
-            <i class="dropdown icon"></i>
-            <div class="default text">Y-axis</div>
-            <div class="menu">
-                <div 
-                v-for="name in datasetInfo.column_names" 
-                v-if="name.length > 0" 
-                class="item" 
-                @click="selectItem($event, name)"
-                :fieldname="name">[[ name ]]</div>
+            <div>
+                <h1>[[ datasetInfo.name ]]</h1>
+                <div class="ui simple selection dropdown column-name-dropdown">
+                    <input type="hidden" name="y_axis">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Y-axis</div>
+                    <div class="menu">
+                        <div 
+                        v-for="name in datasetInfo.column_names" 
+                        v-if="name.length > 0" 
+                        class="item" 
+                        @click="selectItem($event, name)"
+                        :fieldname="name">[[ name ]]</div>
+                    </div>
+                </div>
+                <div class="ui simple selection dropdown column-name-dropdown">
+                    <input type="hidden" name="x_axis">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">X-axis</div>
+                    <div class="menu">
+                        <div 
+                        v-for="name in datasetInfo.column_names" 
+                        v-if="name.length > 0" 
+                        class="item" 
+                        @click="selectItem($event, name)"
+                        :fieldname="name">[[ name ]]</div>
+                    </div>
+                </div>
+                <button @click="renderDataset" class="ui button green" type="submit">Render</button>
+            </div>
+            <div id="rendered-plot" class="ui segment">
+                    <img v-if="plotImgPath" @load="isLoading = false" class="" :class="{ hidden: isLoading }" :src="plotImgPath">
+                <div v-if="isLoading" class="ui active centered medium inline loader"></div>
             </div>
         </div>
-        <div class="ui simple selection dropdown column-name-dropdown">
-            <input type="hidden" name="x_axis">
-            <i class="dropdown icon"></i>
-            <div class="default text">X-axis</div>
-            <div class="menu">
-                <div 
-                v-for="name in datasetInfo.column_names" 
-                v-if="name.length > 0" 
-                class="item" 
-                @click="selectItem($event, name)"
-                :fieldname="name">[[ name ]]</div>
-            </div>
-        </div>
-        <button @click="renderDataset" class="ui button green" type="submit">Render</button>
 		<div id="data-table" class="ui container">
 			<table class="ui celled striped table">
 				<thead>
