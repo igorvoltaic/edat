@@ -47,7 +47,7 @@ class Column(models.Model):
 
 class Plot(models.Model):
     plot_type = EnumChoiceField(PlotType)
-    checksum = models.CharField()
+    checksum = models.CharField(max_length=32)
     height = models.IntegerField()
     width = models.IntegerField()
     dataset = models.ForeignKey(

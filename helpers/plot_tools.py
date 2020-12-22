@@ -80,7 +80,10 @@ def render_plot(
        kind=plot_dto.plot_type.value,
        hue=plot_dto.params.hue
     )
-    plt.figure(figsize=(pixel(1200), pixel(1200)))
+    plt.figure(figsize=(
+            pixel(plot_dto.width),
+            pixel(plot_dto.height)
+        ), dpi=DPI)
     try:
         plt.savefig(
                 image_path,

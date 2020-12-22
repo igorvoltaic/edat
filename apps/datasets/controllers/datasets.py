@@ -126,21 +126,14 @@ def draw_dataset_plot(
             response: Response,
             body: CreatePlotDTO
         ):
-    """ Return a page with dataset list """
+    """ Return location of dataset image """
     try:
-        plot_img_path = get_plot_img(
-                body.id,
-                body.height,
-                body.width,
-                body.plot_type,
-                body.params,
-                body.columns,
-        )
+        plot_img_path = get_plot_img(body)
     except FileAccessError as e:
         raise HTTPException(
-                    status_code=503,
-                    detail=e.message
-        )
+            status_code=503,
+            detail=e.message
+        ) from e
     if not plot_img_path:
         raise HTTPException(status_code=422, detail="Plot creation error")
     response.headers["Content-Location"] = plot_img_path
