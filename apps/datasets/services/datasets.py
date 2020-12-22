@@ -16,7 +16,7 @@ from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
-        PlotDTO, CreatePlotDTO
+        PlotDTO
 from apps.datasets.models import Dataset, Column, CsvDialect, Plot
 from helpers.csv_tools import examine_csv, count_lines, \
         handle_duplicate_fieldnames
@@ -297,33 +297,29 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
     return None
 
 
-def get_plot_img(plot_dto: CreatePlotDTO) -> Optional[PlotDTO]:
-    """ Service reads dataset file, draws plot with supplied X and Y axis info
+def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
+    """ Service reads dataset file, draws plot with supplied parameters
         and returns plot file path
     """
     try:
         dataset = Dataset.objects.get(pk=plot_dto.dataset_id)  # type: ignore
         plot_hash = get_plot_hash(plot_dto)
-        plot = dataset.plots.get(checksum=plot_hash)
+        plot = Plot.objects.get(checksum=plot_hash)  # type:ignore
         if not plot:
             plot_img_path = render_plot(
+                    plot_hash,
                     dataset.file.name,
                     plot_dto,
-                    dataset.csv_dialect)
+                    dataset.csv_dialect
+                )
             plot = Plot.objects.create(  # type: ignore
-                dataset_id=dataset.id,
-                plot_type=plot_dto.plot_type,
+                **plot_dto.dict(),
                 checksum=plot_hash,
-                width=plot_dto.width,
-                height=plot_dto.height,
-                columns=plot_dto.columns,
-                params=plot_dto.params,
                 file=plot_img_path
             )
-        dto = PlotDTO.from_orm(plot)
     except Dataset.DoesNotExist:  # type: ignore
         return None
-    return dto
+    return plot.file.name
 
 
 def check_type(str_value: str) -> ColumnType:

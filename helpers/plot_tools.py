@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from django.conf import settings
 
-from apps.datasets.dtos import CsvDialectDTO, CreatePlotDTO
+from apps.datasets.dtos import CsvDialectDTO, PlotDTO
 
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import get_dir_path
@@ -20,7 +20,25 @@ matplotlib.use('Agg')
 DPI = settings.PLOT_IMG_DPI
 
 
-def get_plot_hash(dto: CreatePlotDTO) -> str:
+def plotter_class(kind):
+    return {
+        "box": sns.catplot,
+        "violin": sns.catplot,
+        "boxen": sns.catplot,
+        "bar": sns.catplot,
+        "point": sns.catplot,
+        "strip": sns.catplot,
+        "swarm": sns.catplot,
+        "count": sns.catplot,
+        "scatter": sns.relplot,
+        "line": sns.relplot,
+        "hist": sns.displot,
+        "kde": sns.displot,
+        "ecdf": sns.displot,
+    }[kind]
+
+
+def get_plot_hash(dto: PlotDTO) -> str:
     """ return DTO's md5 hash """
     hash_object = hashlib.md5(str(dto).encode())
     return hash_object.hexdigest()
@@ -33,15 +51,14 @@ def pixel(px_size: int) -> int:
 
 
 def render_plot(
+        plot_hash: str,
         csv_file: str,
-        plot_params: CreatePlotDTO,
+        plot_dto: PlotDTO,
         dialect: Optional[CsvDialectDTO] = None) -> str:
     """ Take filepath and axis selections and return plot img filepath """
     dataset_dir = get_dir_path(csv_file)
-    image_name = "plot_x_{}_y_{}.png".format(x_axis, y_axis)
+    image_name = "{}.png".format(plot_hash)
     image_path = os.path.join(dataset_dir, image_name)
-    if os.path.isfile(image_path):
-        return image_path
     try:
         if dialect:
             data = pd.read_csv(
@@ -55,19 +72,20 @@ def render_plot(
             data = pd.read_csv(csv_file)
     except (FileExistsError, OSError) as e:
         raise FileAccessError("Cannot read dataset file") from e
-    sns.catplot(
-       x=x_axis,
-       y=y_axis,
+    sns_class = plotter_class(plot_dto.plot_type.value)
+    sns_class(
+       x=plot_dto.params.x_axis,
+       y=plot_dto.params.y_axis,
        data=data,
-       kind="box"
+       kind=plot_dto.plot_type.value,
+       hue=plot_dto.params.hue
     )
+    plt.figure(figsize=(pixel(1200), pixel(1200)))
     try:
         plt.savefig(
                 image_path,
                 bbox_inches='tight',
                 )
-#                figsize=(pixel(1200), pixel(1200), dpi=DPI)
-#            )
     except (FileExistsError, OSError) as e:
         raise FileAccessError("Cannot read dataset file") from e
     return image_path

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, constr
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
     'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'PlotType',
-    'CreatePlotDTO', 'PlotDTO'
+    'PlotDTO'
 ]
 
 
@@ -49,7 +49,7 @@ class PlotType(str, Enum):
     # Relationship plots used by seaborn.relplot()
     SCATTER = "scatter"
     LINE = "line"
-    # Distribution plots used by seaborn.relplot()
+    # Distribution plots used by seaborn.displot()
     HIST = "hist"
     KDE = "kde"
     ECDF = "ecdf"
@@ -103,7 +103,14 @@ class PageDTO(BaseModel):
     num_pages: int
 
 
-class CreatePlotDTO(BaseModel):
+class PlotParamsDTO(BaseModel):
+    """ Parameters passed to a plot """
+    x_axis: str
+    y_axis: str
+    hue: Optional[str]
+
+
+class PlotDTO(BaseModel):
     """ transfer object for data which must be
         provided in order to create a dataset plot
     """
@@ -111,17 +118,8 @@ class CreatePlotDTO(BaseModel):
     height: int
     width: int
     plot_type: Optional[PlotType]
-    params: Optional[str]
+    params: Optional[PlotParamsDTO]
     columns: List[str]
-
-    class Config:
-        orm_mode = True
-
-
-class PlotDTO(CreatePlotDTO):
-    """ transfer object for dataset plot """
-    id: int
-    file: str
 
     class Config:
         orm_mode = True
