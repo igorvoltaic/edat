@@ -317,6 +317,7 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
                 checksum=plot_hash,
                 file=plot_img_path
             )
+            plot.columns.add(*plot_dto.columns, bulk=True)
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return plot.file.name

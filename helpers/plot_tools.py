@@ -74,11 +74,9 @@ def render_plot(
         raise FileAccessError("Cannot read dataset file") from e
     sns_class = plotter_class(plot_dto.plot_type.value)
     sns_class(
-       x=plot_dto.params.x_axis,
-       y=plot_dto.params.y_axis,
        data=data,
        kind=plot_dto.plot_type.value,
-       hue=plot_dto.params.hue
+       **plot_dto.params.dict()
     )
     plt.figure(figsize=(
             pixel(plot_dto.width),

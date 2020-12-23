@@ -15,6 +15,22 @@ export default {
                 comment: null,
             },
             rows: [],
+            plotDto: {
+                dataset_id: this.id,
+                height: null,
+                width: null,
+                plot_type: 'scatter',
+                params: {
+                    x: null,
+                    y: null,
+                    hue: null,
+                },
+                columns: [
+                    this.plotDto.params.x,
+                    this.plotDto.params.y
+                ],
+            },
+            plot_types: [],
             plotImgPath: null,
             isLoading: false,
         };
@@ -36,17 +52,6 @@ export default {
         .catch(ex => {
             console.log(ex.message);
         })
-
-        for (const option of document.querySelectorAll(".custom-option")) {
-            option.addEventListener('click', function() {
-                if (!this.classList.contains('selected')) {
-                    this.parentNode.querySelector('.custom-option.selected').classList.remove('selected');
-                    this.classList.add('selected');
-                    this.closest('.custom-select').querySelector('.custom-select__trigger span').textContent = this.textContent;
-                }
-            })
-        }
-
     },
 
     methods: {
@@ -57,6 +62,13 @@ export default {
             defaultText.value = name
             defaultText.style.color = '#444'
             input.value = name
+        },
+        
+        updatePlotDto: function(event) {
+            this.plotDto[event.target.name] = event.target.value
+        },
+        updatePlotParams: function(event) {
+            this.plotDto.params[event.target.name] = event.target.value
         },
 
         renderDataset: function () {
@@ -72,9 +84,6 @@ export default {
             }
             const path = '/api/render'
             let body = {
-                id: this.id,
-                x_axis: x_axis,
-                y_axis: y_axis
             }
             fetch(path, {
                 method: 'POST',

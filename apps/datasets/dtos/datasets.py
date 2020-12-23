@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Optional, List, Dict
 from datetime import datetime
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field, constr, conlist
 
 
 __all__ = [
@@ -103,10 +103,10 @@ class PageDTO(BaseModel):
     num_pages: int
 
 
-class PlotParamsDTO(BaseModel):
+class PlotParams(BaseModel):
     """ Parameters passed to a plot """
-    x_axis: str
-    y_axis: str
+    x: Optional[str]
+    y: Optional[str]
     hue: Optional[str]
 
 
@@ -115,11 +115,11 @@ class PlotDTO(BaseModel):
         provided in order to create a dataset plot
     """
     dataset_id: int
-    height: int
-    width: int
+    height: int = Field(default=600)
+    width: int = Field(default=600)
     plot_type: Optional[PlotType]
-    params: Optional[PlotParamsDTO]
-    columns: List[str]
+    params: Optional[PlotParams]
+    columns: conlist(str, min_items=1, max_items=2)
 
     class Config:
         orm_mode = True

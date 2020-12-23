@@ -9,7 +9,7 @@ from apps.datasets.services import get_all_datasets, read_dataset, \
     create_dataset_entry, delete_dataset_entry, get_plot_img
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
-        DatasetInfoDTO, CsvDialectDTO, CreatePlotDTO, PlotDTO
+        DatasetInfoDTO, CsvDialectDTO, PlotDTO
 
 from helpers.auth_tools import login_required
 from helpers.exceptions import FileAccessError
@@ -124,7 +124,7 @@ def delete_temparary_file(request: Request, file_id: str):
 def draw_dataset_plot(
             request: Request,
             response: Response,
-            body: CreatePlotDTO
+            body: PlotDTO
         ):
     """ Return location of dataset image """
     try:
