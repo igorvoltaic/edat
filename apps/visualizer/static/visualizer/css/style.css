@@ -2,13 +2,14 @@
   border: 1px solid rgba(34, 36, 38, 0.15);
   padding: 0;
   padding-right: 0px;
-  margin-bottom: 1em;
+  margin-bottom: 0.7em;
   border-radius: 0.28571429rem;
   width: 14em;
   cursor: pointer;
 }
 .select-dropdown .dropdown-default {
   margin: 0.5em;
+  color: #e1e1e1;
 }
 .select-dropdown .dropdown-menu {
   background: #fff;
@@ -87,6 +88,21 @@
 .dataset-render-header div.render-options {
   display: flex;
   flex-direction: column;
+}
+.dataset-render-header div.render-options label {
+  display: block;
+  font-weight: 900;
+  padding-left: 0.5em;
+  color: #444;
+}
+.dataset-render-header div.render-options div.ui.labeled.input {
+  display: block;
+}
+.dataset-render-header div.render-options div.ui.labeled.input input {
+  height: 2.5em;
+  padding: 0.5em;
+  margin-bottom: 0.7em;
+  width: 14em;
 }
 .dataset-render-header div#rendered-plot {
   max-width: 600px;

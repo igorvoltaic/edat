@@ -18,7 +18,7 @@ const dropdownSelect = {
           for (const dropdown of document.querySelectorAll('.select-dropdown')) {
               const menu = dropdown.querySelector('.dropdown-menu')
               if (!dropdown.contains(e.target)) {
-                  menu.style.display = 'none'
+                  menu.classList.remove('select-active');
               }
           }
       });

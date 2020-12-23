@@ -54,6 +54,24 @@
     div.render-options {
         display: flex;
         flex-direction: column;
+
+        label {
+            display: block;
+            font-weight: 900;
+            padding-left: 0.5em;
+            color: #444;
+        }
+
+        div.ui.labeled.input {
+            display: block;
+
+            input {
+                height: 2.5em;
+                padding: 0.5em;
+                margin-bottom: 0.7em;
+                width: 14em;
+            }
+        }
     }
 
     div#rendered-plot {

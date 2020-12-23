@@ -28,7 +28,21 @@ export default {
                 },
                 columns: [],
             },
-            plot_types: [],
+            plot_types: [
+                "strip",
+                "swarm",
+                "box",
+                "violin",
+                "boxen",
+                "point",
+                "bar",
+                "count",
+                "scatter",
+                "line",
+                "hist",
+                "kde",
+                "ecdf",
+            ],
             plotImgPath: null,
             isLoading: false,
         };
@@ -54,14 +68,14 @@ export default {
     },
 
     methods: {
-        selectItem: function (event, name) {
+        selectItem: function (event, fieldname) {
             const defaultText = event.target.parentElement.previousElementSibling
             const input = defaultText.parentElement.querySelector('input')
             const menu = event.target.parentElement
-            defaultText.innerHTML = name
-            defaultText.value = name
+            defaultText.innerHTML = fieldname
+            defaultText.value = fieldname
             defaultText.style.color = '#444'
-            input.value = name
+            input.value = fieldname
             menu.classList.toggle('select-active');
 
         },
