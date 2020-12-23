@@ -8,5 +8,5 @@ new Vue({
     el: "#app",
     components: {
         navbar: () => import(staticFiles + "vue/navbar.js"),
-    }
+    },
 })

@@ -25,10 +25,7 @@ export default {
                     y: null,
                     hue: null,
                 },
-                columns: [
-                    this.plotDto.params.x,
-                    this.plotDto.params.y
-                ],
+                columns: [],
             },
             plot_types: [],
             plotImgPath: null,
@@ -52,18 +49,43 @@ export default {
         .catch(ex => {
             console.log(ex.message);
         })
+
+    },
+
+    mounted: function () {
+        document.querySelectorAll(".select-dropdown").forEach(dropdown => {
+            dropdown.children[2].addEventListener('click', function() {
+                this.parentElement.querySelector('.dropdown-menu').classList.toggle('select-active');
+            })
+            dropdown.children[1].addEventListener('click', function() {
+                this.parentElement.querySelector('.dropdown-menu').classList.toggle('select-active');
+            })
+        });
+
+        window.addEventListener('click', function(e) {
+            for (const dropdown of document.querySelectorAll('.select-dropdown')) {
+                const menu = dropdown.querySelector('.dropdown-menu')
+                if (!dropdown.contains(e.target)) {
+                    menu.style.display = 'none'
+                }
+            }
+        });
+
     },
 
     methods: {
         selectItem: function (event, name) {
             const defaultText = event.target.parentElement.previousElementSibling
             const input = defaultText.parentElement.querySelector('input')
+            const menu = event.target.parentElement
             defaultText.innerHTML = name
             defaultText.value = name
             defaultText.style.color = '#444'
             input.value = name
+            menu.classList.toggle('select-active');
+
         },
-        
+
         updatePlotDto: function(event) {
             this.plotDto[event.target.name] = event.target.value
         },
@@ -89,7 +111,7 @@ export default {
                 method: 'POST',
                 body: JSON.stringify(body)
             })
-            .then(response => response.json())
+            .then(response => response.headers)
             .then(result => {
                 this.plotImgPath = result.plot_img_path
             });
