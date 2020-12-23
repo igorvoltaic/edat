@@ -6,6 +6,7 @@ export default {
         'dataset-editor-datarow': () => import(staticFiles + "vue/dataset-editor-datarow.js"),
     },
     props: ['id'],
+    mixins: [dropdownSelect],
     data() {
         return {
             datasetInfo: {
@@ -49,27 +50,6 @@ export default {
         .catch(ex => {
             console.log(ex.message);
         })
-
-    },
-
-    mounted: function () {
-        document.querySelectorAll(".select-dropdown").forEach(dropdown => {
-            dropdown.children[2].addEventListener('click', function() {
-                this.parentElement.querySelector('.dropdown-menu').classList.toggle('select-active');
-            })
-            dropdown.children[1].addEventListener('click', function() {
-                this.parentElement.querySelector('.dropdown-menu').classList.toggle('select-active');
-            })
-        });
-
-        window.addEventListener('click', function(e) {
-            for (const dropdown of document.querySelectorAll('.select-dropdown')) {
-                const menu = dropdown.querySelector('.dropdown-menu')
-                if (!dropdown.contains(e.target)) {
-                    menu.style.display = 'none'
-                }
-            }
-        });
 
     },
 
