@@ -58,6 +58,18 @@ export default {
     },
 
     methods: {
+        resetDto: function() {
+            document.querySelectorAll('.dropdown-default').forEach(elem => {
+                elem.innerHTML = 'Select'
+                elem.style.color = '#e1e1e1';
+            })
+            this.plotDto.params.x = null
+            this.plotDto.params.y = null
+            this.plotDto.params.hue = null
+            this.plotDto.columns = []
+            this.plotDto.height = 600
+            this.plotDto.width = 600
+        },
         updateHue: function() {
             let hueCols = []
             let x = document.querySelector('input[name="x"]').value
@@ -71,26 +83,16 @@ export default {
         renderDataset: function () {
             this.isLoading = true
             this.plotImgPath = null
-            const x_axis = document.querySelector('input[name="x_axis"]').value
-            const y_axis = document.querySelector('input[name="y_axis"]').value
-            const cnames = this.datasetInfo.column_names
-            const correctInput = cnames.includes(x_axis || y_axis) ? true : false
-            if (!correctInput) {
-                console.log('Must provide valid column names');
-                return;
-            }
             const path = '/api/render'
-            let body = {
-            }
+            let body = this.plotDto
             fetch(path, {
                 method: 'POST',
                 body: JSON.stringify(body)
             })
             .then(response => response.headers)
             .then(result => {
-                this.plotImgPath = result.plot_img_path
-            });
-
+                this.plotImgPath = result.get('Content-Location')
+            })
         }
     },
 }

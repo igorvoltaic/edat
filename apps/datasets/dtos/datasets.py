@@ -115,8 +115,8 @@ class PlotDTO(BaseModel):
         provided in order to create a dataset plot
     """
     dataset_id: int
-    height: int = Field(default=600)
-    width: int = Field(default=600)
+    height: int
+    width: int
     plot_type: Optional[PlotType]
     params: Optional[PlotParams]
     columns: conlist(str, min_items=1, max_items=2)

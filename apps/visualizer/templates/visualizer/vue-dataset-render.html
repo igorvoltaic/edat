@@ -37,6 +37,7 @@
                     <input v-model="plotDto.width" type="text" placeholder="Default is 600px" name="width">
                 </div>
                 <button @click="renderDataset" class="ui button green" type="submit">Render</button>
+                <button @click="resetDto" class="ui button">Reset</button>
             </div>
             <div id="rendered-plot" class="ui segment">
                     <img v-if="plotImgPath" 

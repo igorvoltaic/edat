@@ -72,16 +72,16 @@ def render_plot(
             data = pd.read_csv(csv_file)
     except (FileExistsError, OSError) as e:
         raise FileAccessError("Cannot read dataset file") from e
+    plt.figure(figsize=(
+            pixel(plot_dto.width),
+            pixel(plot_dto.height)
+        ), dpi=DPI)
     sns_class = plotter_class(plot_dto.plot_type.value)
     sns_class(
        data=data,
        kind=plot_dto.plot_type.value,
        **plot_dto.params.dict()
     )
-    plt.figure(figsize=(
-            pixel(plot_dto.width),
-            pixel(plot_dto.height)
-        ), dpi=DPI)
     try:
         plt.savefig(
                 image_path,

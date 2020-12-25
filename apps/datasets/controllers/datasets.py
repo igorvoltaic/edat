@@ -119,7 +119,7 @@ def delete_temparary_file(request: Request, file_id: str):
     return JSONResponse(content={"message": "submission cancelled"})
 
 
-@api_router.post("/render", status_code=204)
+@api_router.post("/render")
 @login_required
 def draw_dataset_plot(
             request: Request,
@@ -136,5 +136,6 @@ def draw_dataset_plot(
         ) from e
     if not plot_img_path:
         raise HTTPException(status_code=422, detail="Plot creation error")
-    response.headers["Content-Location"] = plot_img_path
+    response.headers["Content-Location"] = f"/{plot_img_path}"
+    response.status_code = 204
     return response

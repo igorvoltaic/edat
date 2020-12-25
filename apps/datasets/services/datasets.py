@@ -304,7 +304,7 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
     try:
         dataset = Dataset.objects.get(pk=plot_dto.dataset_id)  # type: ignore
         plot_hash = get_plot_hash(plot_dto)
-        plot = Plot.objects.get(checksum=plot_hash)  # type:ignore
+        plot = Plot.objects.filter(checksum=plot_hash).first()  # type:ignore
         if not plot:
             plot_img_path = render_plot(
                     plot_hash,
@@ -313,11 +313,17 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
                     dataset.csv_dialect
                 )
             plot = Plot.objects.create(  # type: ignore
-                **plot_dto.dict(),
+                dataset=dataset,
+                height=plot_dto.height,
+                width=plot_dto.width,
+                plot_type=plot_dto.plot_type,
+                params=plot_dto.params.json(),
                 checksum=plot_hash,
                 file=plot_img_path
             )
-            plot.columns.add(*plot_dto.columns, bulk=True)
+            columns = dataset.columns.filter(name__in=plot_dto.columns)
+            plot.columns.set(columns)
+            plot.save
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return plot.file.name
