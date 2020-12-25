@@ -18,8 +18,8 @@ export default {
             rows: [],
             plotDto: {
                 dataset_id: this.id,
-                height: null,
-                width: null,
+                height: 600,
+                width: 600,
                 plot_type: 'scatter',
                 params: {
                     x: null,
@@ -28,7 +28,7 @@ export default {
                 },
                 columns: [],
             },
-            plot_types: [ 
+            plot_types: [
                 "strip", "swarm", "box", "violin",
                 "boxen", "point", "bar", "count", "scatter",
                 "line", "hist", "kde", "ecdf",

@@ -104,6 +104,9 @@
   margin-bottom: 0.7em;
   width: 14em;
 }
+.dataset-render-header div.render-options button {
+  margin-top: 1em;
+}
 .dataset-render-header div#rendered-plot {
   max-width: 600px;
   min-width: 600px;
@@ -159,6 +162,30 @@ div#home-container form.ui.form {
   display: flex;
   justify-content: center;
 }
+div#home-container form.ui.form div.field {
+  display: flex;
+  align-items: center;
+}
+div#home-container form.ui.form div.field input#upload-csv-file {
+  display: none;
+}
+div#home-container form.ui.form div.field label#upload-csv-file-label {
+  display: inline-block;
+  color: #444;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-right: 1em;
+  margin-left: 1em;
+  margin-bottom: 0;
+}
+div#home-container form.ui.form div.field div#pre-label-text {
+  display: inline-block;
+  color: #444;
+  font-weight: bold;
+  min-height: 1em;
+  font-size: 1rem;
+  margin-right: 1em;
+}
 div#home-container div#dataset-table {
   width: 80%;
 }
@@ -185,35 +212,9 @@ div#home-container div#dataset-table table thead tr th {
 div#home-container div#dataset-table table thead tr th:last-child {
   width: 12em;
 }
-div#home-container div.field {
-  display: flex;
-  align-items: center;
-}
-div#home-container div.field input#upload-csv-file {
-  display: none;
-}
-div#home-container div.field label#upload-csv-file-label {
-  display: inline-block;
-  color: #444;
-  font-weight: bold;
-  margin-left: 1em;
-  font-size: 1rem;
-  margin-right: 1em;
-  margin-left: 1em;
-  margin-bottom: 0;
-}
-div#home-container div.field div#pre-label-text {
-  display: inline-block;
-  color: #444;
-  font-weight: bold;
-  min-height: 1em;
-  font-size: 1rem;
-  margin-right: 1em;
-}
 
 div#data-table {
   overflow-x: scroll;
-  border-right: 1px solid rgba(34, 36, 38, 0.15);
 }
 div#data-table table th.type-dropdown-cell {
   margin: 0;
@@ -270,6 +271,111 @@ div#data-table table th.type-dropdown-cell i.icon {
     opacity: 1;
     max-width: 100%;
     height: auto;
+  }
+}
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  .dataset-render-header div#rendered-plot {
+    max-width: 500px;
+    min-width: 500px;
+    min-height: 500px;
+  }
+}
+@media screen and (max-width: 767px) {
+  #rendered-plot {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    object-fit: scale-down;
+  }
+
+  .dataset-render-header {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .dataset-render-header div.render-options button {
+    margin-right: 0;
+  }
+  .dataset-render-header div.render-options div.ui.labeled.input input {
+    width: 100%;
+  }
+  .dataset-render-header .select-dropdown {
+    width: 100%;
+  }
+  .dataset-render-header .select-dropdown i {
+    right: 1.5em;
+  }
+
+  div#data-table {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  div#home-container button.ui:nth-child(4) .ui.button .message {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+  }
+  div#home-container form.ui.form {
+    display: flex;
+    flex-direction: column;
+  }
+  div#home-container form.ui.form div.field {
+    display: flex;
+    flex-direction: column;
+    align-items: normal;
+  }
+  div#home-container form.ui.form div.field .pre-label-text {
+    font-size: 1.5em;
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 1em;
+  }
+  div#home-container form.ui.form div.field label#upload-csv-file-label {
+    display: inline-block;
+    color: #444;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 1em;
+  }
+  div#home-container form.ui.form div.field button {
+    margin: 0;
+  }
+  div#home-container div.red {
+    margin-right: 0;
+    margin-left: 0;
+  }
+  div#home-container div#dataset-table {
+    width: 80%;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+  div#home-container div#dataset-table .ui.table [class*="right aligned"] {
+    text-align: left !important;
+  }
+  div#home-container div#dataset-table form#search-form {
+    display: flex;
+    justify-content: left;
+  }
+  div#home-container div#dataset-table button {
+    padding: 7px 15px !important;
+  }
+  div#home-container div#dataset-table table {
+    border: 1px solid #444;
+  }
+  div#home-container div#dataset-table table .datasetListRow:hover {
+    background-color: lightyellow;
+    cursor: pointer;
+  }
+  div#home-container div#dataset-table table thead {
+    display: none;
+  }
+  div#home-container div#dataset-table table button {
+    width: 30%;
   }
 }
 
