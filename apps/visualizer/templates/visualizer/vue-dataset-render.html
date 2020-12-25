@@ -6,85 +6,37 @@
         <div class="dataset-render-header">
             <div class="render-options">
                 <h1>[[ datasetInfo.name ]]</h1>
-                <div>
-                    <label>Y-axis</label>
-                    <div class="select-dropdown">
-                        <input @change="updatePlotParams($event)" type="hidden" name="y">
-                        <i class="dropdown icon"></i>
-                        <div class="dropdown-default">Select</div>
-                        <div class="dropdown-menu">
-                            <div 
-                             v-for="name in datasetInfo.column_names" 
-                             v-if="name.length > 0" 
-                             class="dropdown-menu-item" 
-                             @click="selectItem($event, name)"
-                             >[[ name ]]</div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label>X-axis</label>
-                    <div class="select-dropdown">
-                        <input @change="updatePlotParams($event)" type="hidden" name="x">
-                        <i class="dropdown icon"></i>
-                        <div class="dropdown-default">Select</div>
-                        <div class="dropdown-menu">
-                            <div 
-                             v-for="name in datasetInfo.column_names" 
-                             v-if="name.length > 0" 
-                             class="dropdown-menu-item" 
-                             @click="selectItem($event, name)"
-                             >[[ name ]]</div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label>Plot type</label>
-                    <div class="select-dropdown">
-                        <input @change="updatePlotDto($event)" type="hidden" name="plot_type">
-                        <i class="dropdown icon"></i>
-                        <div class="dropdown-default">Select</div>
-                        <div class="dropdown-menu">
-                            <div 
-                             v-for="type in plot_types" 
-                             class="dropdown-menu-item" 
-                             @click="selectItem($event, type)"
-                             >[[ type ]]</div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label>
-                        Hue
-                    </label>
-                    <div class="select-dropdown">
-                        <input @change="updatePlotParams($event)" type="hidden" name="hue">
-                        <i class="dropdown icon"></i>
-                        <div class="dropdown-default">Select</div>
-                        <div class="dropdown-menu">
-                            <div 
-                             v-for="name in datasetInfo.column_names" 
-                             v-if="name.length > 0" 
-                             class="dropdown-menu-item" 
-                             @click="selectItem($event, name)"
-                             >[[ name ]]</div>
-                        </div>
-                    </div>
-                </div>
+                <dropdown-select 
+                 :items="datasetInfo.column_names"
+                 :name="'y'"
+                 v-model="plotDto.params.y" @input="updateHue">Y-axis
+                </dropdown-select>
+                <dropdown-select 
+                 :items="datasetInfo.column_names"
+                 :name="'x'"
+                 v-model="plotDto.params.x" @input="updateHue">X-axis
+                </dropdown-select>
+                <dropdown-select 
+                 :items="plot_types"
+                 v-model="plotDto.plot_type">Plot type
+                </dropdown-select>
+                <dropdown-select 
+                 :items="plotDto.columns"
+                 v-model="plotDto.params.hue">Hue
+                </dropdown-select>
                 <div id="height" class="ui labeled input">
                     <label>
-                        Height
+                        Height in px
                     </label>
-                    <input id="height" type="text" placeholder="Input" name="height">
+                    <input v-model="plotDto.height" type="text" placeholder="Input" name="height">
                 </div>
                 <div id="width" class="ui labeled input">
                     <label>
-                        Width
+                        Width in px
                     </label>
-                    <input id="width" type="text" placeholder="Input" name="width">
+                    <input v-model="plotDto.width" type="text" placeholder="Input" name="width">
                 </div>
-                <button @click="renderDataset" 
-                 class="ui button green" type="submit">Render</button>
+                <button @click="renderDataset" class="ui button green" type="submit">Render</button>
             </div>
             <div id="rendered-plot" class="ui segment">
                     <img v-if="plotImgPath" 

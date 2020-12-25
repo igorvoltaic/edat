@@ -4,9 +4,9 @@ export default {
     delimiters: ['[[',']]'],
     components: {
         'dataset-editor-datarow': () => import(staticFiles + "vue/dataset-editor-datarow.js"),
+        'dropdown-select': () => import(staticFiles + "vue/dropdown-select.js"),
     },
     props: ['id'],
-    mixins: [dropdownSelect],
     data() {
         return {
             datasetInfo: {
@@ -28,20 +28,10 @@ export default {
                 },
                 columns: [],
             },
-            plot_types: [
-                "strip",
-                "swarm",
-                "box",
-                "violin",
-                "boxen",
-                "point",
-                "bar",
-                "count",
-                "scatter",
-                "line",
-                "hist",
-                "kde",
-                "ecdf",
+            plot_types: [ 
+                "strip", "swarm", "box", "violin",
+                "boxen", "point", "bar", "count", "scatter",
+                "line", "hist", "kde", "ecdf",
             ],
             plotImgPath: null,
             isLoading: false,
@@ -68,25 +58,16 @@ export default {
     },
 
     methods: {
-        selectItem: function (event, fieldname) {
-            const defaultText = event.target.parentElement.previousElementSibling
-            const input = defaultText.parentElement.querySelector('input')
-            const menu = event.target.parentElement
-            defaultText.innerHTML = fieldname
-            defaultText.value = fieldname
-            defaultText.style.color = '#444'
-            input.value = fieldname
-            menu.classList.toggle('select-active');
-
+        updateHue: function() {
+            let hueCols = []
+            let x = document.querySelector('input[name="x"]').value
+            let y = document.querySelector('input[name="y"]').value
+            hueCols.push(x)
+            if (!hueCols.includes(y)) {
+                hueCols.push(y)
+            }
+            this.plotDto.columns = hueCols
         },
-
-        updatePlotDto: function(event) {
-            this.plotDto[event.target.name] = event.target.value
-        },
-        updatePlotParams: function(event) {
-            this.plotDto.params[event.target.name] = event.target.value
-        },
-
         renderDataset: function () {
             this.isLoading = true
             this.plotImgPath = null

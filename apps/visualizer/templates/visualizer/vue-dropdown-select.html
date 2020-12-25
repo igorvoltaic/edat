@@ -1,0 +1,24 @@
+{% load static %}
+
+{% block dataset_select %}
+<script type="text/x-template" id="dropdown-select-template">
+    <div>
+        <label>
+            <slot></slot>
+        </label>
+        <div class="select-dropdown">
+            <input type="hidden" :name="name" value="">
+            <i class="dropdown icon" @click="classToggle($event)"></i>
+            <div class="dropdown-default" @click="classToggle($event)">Select</div>
+            <div class="dropdown-menu"">
+                <div 
+                 v-for="item in items" 
+                 v-if="item.length > 0" 
+                 class="dropdown-menu-item" 
+                 @click="selectItem($event, item)"
+                 >[[ item ]]</div>
+            </div>
+        </div>
+    </div>
+</script>
+{% endblock %}
