@@ -46,6 +46,7 @@ export default {
             document.querySelector("#upload-csv-file-label").innerHTML = fileInput.files[0].name
         },
         addDataset: function() {
+            this.error = null
             var data = new FormData()
             const fileInput = document.querySelector('#upload-csv-file');
             data.append('file', fileInput.files[0]);
@@ -54,17 +55,16 @@ export default {
                 body: data,
             })
             .then(response => {
-                if (response.status !== 200) {
+                if (!response.ok) {
                     throw new Error('File upload error')
                 }
                 return response.json()
             })
             .then(result => {
                 router.push({
-                    name: 'editor',
-                    params: {
-                        result: result,
-                        new_dataset: true,
+                    name: "editor",
+                    query: {
+                        file_id: result.file_id,
                     },
                 });
             })

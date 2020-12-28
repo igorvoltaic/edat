@@ -53,7 +53,7 @@ def read_dataset(
         if not dialect:
             # In case we changed the delimiter number of columns
             # has changed as well and there is no point in reading
-            # column types in the DB
+            # column types from the DB
             for index, _ in enumerate(zip(  # type: ignore
                 file_info.column_names,
                 file_info.column_types)
@@ -106,25 +106,23 @@ def handle_uploaded_file(
         Read file data and return information about its contents
         Or reread information using user-supplied csv dialect
     """
-    if file_id and not filename:
-        tempfile = get_tmpfile_path(file_id)
-        filename = get_tmpfile_name(file_id)
+    file_id = file_id if file_id else get_file_id()
+    filename = filename if filename else get_tmpfile_name(file_id)
+    if not filename:
+        raise FileAccessError("Cannot read temporary file")
+    try:
+        tempfile = create_temporary_file(filename, file_id, file) if file \
+                else get_tmpfile_path(file_id)
         if not tempfile:
             raise FileAccessError("Cannot read temporary file")
-    elif file and filename:
-        file_id = get_file_id()
+        logging.info("Temporary file with id %s was created", file_id)
         try:
-            tempfile = create_temporary_file(filename, file_id, file)
-            logging.info("Temporary file with id %s was created", file_id)
-        except (FileExistsError, OSError) as e:
-            raise FileAccessError("Cannot save temporary file") from e
-    try:
-        if file_id:
-            file_info = read_csv(filename, tempfile, dialect)  # type: ignore
-        else:
-            file_info = read_csv(filename, tempfile)  # type: ignore
-    except (ValidationError, StopIteration, ValueError) as e:
-        raise FileAccessError("Invalid filename or contents") from e
+            file_info = read_csv(filename, tempfile, dialect) if dialect \
+                else read_csv(filename, tempfile)
+        except (ValidationError, StopIteration, ValueError) as err:
+            raise FileAccessError("Invalid filename or contents") from err
+    except (FileExistsError, OSError) as err:
+        raise FileAccessError("Cannot save temporary file") from err
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
 
@@ -154,11 +152,11 @@ def read_csv(
         if keys:
             reader.fieldnames = keys
     line_num = count_lines(data, has_header)
-    rows_to_read = settings.SAMPLE_ROW_COUNT
+    rows_to_read = settings.SAMPLE_ROWS_COUNT
     if line_num < rows_to_read:
         rows_to_read = line_num
     datarows = [next(reader) for _ in range(1, rows_to_read)]
-    start_row = 0
+    start_row = settings.CSV_STARTING_ROW
     if csv_dialect.start_row:
         start_row = csv_dialect.start_row
     column_types = [check_type(str(v)) for v in datarows[start_row].values()]
@@ -186,8 +184,8 @@ def edit_dataset_entry(
         return None
     # In case we changed the delimiter number of columns was changed as well
     # and now we need to delete unnecessary columns and add new ones after that
-    if Column.objects.count() != dto.width:  # type: ignore
-        Column.objects.all().delete()  # type: ignore
+    if dataset.columns.count() != dto.width:  # type: ignore
+        dataset.columns.all().delete()  # type: ignore
         for index, data in enumerate(zip(  # type: ignore
             dto.column_names,
             dto.column_types)
@@ -323,7 +321,6 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
             )
             columns = dataset.columns.filter(name__in=plot_dto.columns)
             plot.columns.set(columns)
-            plot.save
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return plot.file.name

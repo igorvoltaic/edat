@@ -35,6 +35,7 @@ export default {
             ],
             plotImgPath: null,
             isLoading: false,
+            error: null
         };
     },
     created: function () {
@@ -81,18 +82,26 @@ export default {
             this.plotDto.columns = hueCols
         },
         renderDataset: function () {
+            this.error = null
             this.isLoading = true
             this.plotImgPath = null
             const path = '/api/render'
             let body = this.plotDto
-            fetch(path, {
-                method: 'POST',
-                body: JSON.stringify(body)
-            })
-            .then(response => response.headers)
-            .then(result => {
-                this.plotImgPath = result.get('Content-Location')
-            })
+            const doAjax = async () => {
+                const response = await fetch(path, {
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+                if (response.ok) {
+                    const headers = await response.headers;
+                    this.plotImgPath = headers.get('Content-Location')
+                } else { 
+                    const jVal = await response.json();
+                    this.error = jVal.detail
+                    return Promise.reject(jVal.detail); 
+                }
+            }
+            doAjax().catch(console.log);       
         }
     },
 }

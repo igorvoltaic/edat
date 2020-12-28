@@ -30,31 +30,20 @@ export default {
                 this.$parent.fetchDatasets("1")
             })
         },
-        openDataset: function(datasetId) {
-            router.push({ name: 'dataset', params: { id: datasetId } })
+        openDataset: function() {
+            router.push({ name: 'dataset', params: { id: this.dataset.id } })
         },
         editDataset: function(event) {
             event.preventDefault();
             event.stopPropagation();
-            fetch(`/api/dataset/${this.dataset.id}`)
-            .then(response => {
-                if (response.status !== 200) {
-                    throw new Error('Dataset not found');
-                }
-                return response.json()
-            })
-            .then(result => {
-                router.push({
-                    name: 'editor',
-                    params: {
-                        result: result,
-                        new_dataset: false,
-                    },
-                });
-            })
-            .catch(ex => {
-                console.log(ex.message);
-            })
+            router.push({
+                name: 'editor',
+                params: {
+                    id: this.dataset.id,
+                    result: null,
+                    new_dataset: false,
+                },
+            });
          },
     },
 }

@@ -2,10 +2,11 @@ export default {
     name: 'dropdown-select',
     template: '#dropdown-select-template',
     delimiters: ['[[',']]'],
-    props: ['items', 'name' ],
+    props: ['items', 'name', 'selected' ],
     data() {
         return {
-            isActive: false
+            isActive: false,
+            isCreated: true
         }
     },
     methods: {
@@ -14,6 +15,7 @@ export default {
             menu.classList.toggle('select-active');
         },
         selectItem: function (event, item) {
+            this.isCreated = false
             const defaultText = event.target.parentElement.previousElementSibling
             const input = defaultText.parentElement.querySelector('input')
             const menu = event.target.parentElement

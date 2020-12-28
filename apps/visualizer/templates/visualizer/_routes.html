@@ -8,18 +8,17 @@
     {% if user.is_authenticated %}
 
     const navLinks = [
-            { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js")},
-            { name: 'logout', meta: 'Log Out', path: "{% url 'logout' %}", component: {created: function () {window.location.replace('/logout')}} },
-            { name: 'dataset', path: '/dataset/:id', component: () => import(staticFiles + "vue/dataset-render.js"), props: true },
-            { name: 'editor', path: '/editor', component: () => import(staticFiles + "vue/dataset-editor.js"), props: true },
-
+        { name: 'home', meta: 'Home', path: "{% url 'index' %}", component: () => import(staticFiles + "vue/dataset-list.js")},
+        { name: 'logout', meta: 'Log Out', path: "{% url 'logout' %}", component: {created: function () {window.location.replace('/logout')}} },
+        { name: 'dataset', path: '/dataset/:id', component: () => import(staticFiles + "vue/dataset-render.js"), props: true },
+        { name: 'editor', path: '/editor/:id?', component: () => import(staticFiles + "vue/dataset-editor.js"), props: true },
     ]
 
     {% else %}
 
     const navLinks = [
-            { name: 'login', meta: 'Log In', path: "{% url 'login' %}", component: () => import(staticFiles + "vue/login.js") },
-            { name: 'register', meta: 'Register', path: "{% url 'register' %}", component: () => import(staticFiles + "vue/register.js") },
+        { name: 'login', meta: 'Log In', path: "{% url 'login' %}", component: () => import(staticFiles + "vue/login.js") },
+        { name: 'register', meta: 'Register', path: "{% url 'register' %}", component: () => import(staticFiles + "vue/register.js") },
     ]
 
     {% endif %}

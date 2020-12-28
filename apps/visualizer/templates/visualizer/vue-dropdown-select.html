@@ -7,9 +7,11 @@
             <slot></slot>
         </label>
         <div class="select-dropdown">
-            <input type="hidden" :name="name" value="">
+            <input v-if="isCreated && selected" type="hidden" :name="name" :value="selected">
+            <input v-else type="hidden" :name="name" value="">
             <i class="dropdown icon" @click="classToggle($event)"></i>
-            <div class="dropdown-default" @click="classToggle($event)">Select</div>
+            <div v-if="isCreated && selected" class="dropdown-default" @click="classToggle($event)">[[ selected ]]</div>
+            <div v-else class="dropdown-default" @click="classToggle($event)">Select</div>
             <div class="dropdown-menu"">
                 <div 
                  v-for="item in items" 

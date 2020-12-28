@@ -25,6 +25,8 @@
         border: 1px solid rgba(34,36,38,.15);
         border-radius: 0.28571429rem;
         transition: opacity .1s ease;
+        max-height: 15em;
+        overflow: auto;
     }
 
     .dropdown-menu-item {

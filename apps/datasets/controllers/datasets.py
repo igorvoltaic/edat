@@ -12,7 +12,7 @@ from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
         DatasetInfoDTO, CsvDialectDTO, PlotDTO
 
 from helpers.auth_tools import login_required
-from helpers.exceptions import FileAccessError
+from helpers.exceptions import FileAccessError, PlotRenderError
 
 
 api_router = APIRouter()
@@ -49,21 +49,21 @@ def edit_dataset(request: Request, dataset_id: int, body: DatasetDTO):
 @api_router.post("/dataset", response_model=CreateDatasetDTO)
 @login_required
 def upload_dataset_file(request: Request, file: UploadFile = File(...)):
-    """ Receive CSV file and """
+    """ Receive CSV file and return dataset information """
     if file.filename.split('.')[-1] != "csv" \
             or file.content_type != "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
     try:
         file_info = handle_uploaded_file(file.filename, file.file.read())
-    except FileAccessError as e:
+    except FileAccessError as err:
         raise HTTPException(
                     status_code=503,
-                    detail=e.message
-        )
+                    detail=err.message
+        ) from err
     return file_info
 
 
-@api_router.post("/reread/{dataset_id}", response_model=DatasetDTO)
+@api_router.post("/read/{dataset_id}", response_model=DatasetDTO)
 @login_required
 def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
     """ Re-read dataset file using new user-supplied csv dialect """
@@ -73,17 +73,33 @@ def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
     return dataset
 
 
-@api_router.post("/reread", response_model=CreateDatasetDTO)
+@api_router.get("/read", response_model=CreateDatasetDTO)
+@login_required
+def read_tmpfile(request: Request, file_id: str):
+    """ Read dataset temporary file in with supplied id """
+    try:
+        dataset = handle_uploaded_file(file_id=file_id)
+    except FileAccessError as err:
+        raise HTTPException(
+                    status_code=503,
+                    detail=err.message
+        ) from err
+    if not dataset:
+        raise HTTPException(status_code=422, detail="Dataset reading error")
+    return dataset
+
+
+@api_router.post("/read", response_model=CreateDatasetDTO)
 @login_required
 def reread_tmpfile(request: Request, file_id: str, dialect: CsvDialectDTO):
     """ Re-read dataset temporary file using new user-supplied csv dialect """
     try:
         dataset = handle_uploaded_file(file_id=file_id, dialect=dialect)
-    except FileAccessError as e:
+    except FileAccessError as err:
         raise HTTPException(
                     status_code=503,
-                    detail=e.message
-        )
+                    detail=err.message
+        ) from err
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset amendment error")
     return dataset
@@ -129,13 +145,18 @@ def draw_dataset_plot(
     """ Return location of dataset image """
     try:
         plot_img_path = get_plot_img(body)
-    except FileAccessError as e:
+    except FileAccessError as err:
         raise HTTPException(
             status_code=503,
-            detail=e.message
-        ) from e
+            detail=err.message
+        ) from err
+    except PlotRenderError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=err.message
+        ) from err
     if not plot_img_path:
-        raise HTTPException(status_code=422, detail="Plot creation error")
+        raise HTTPException(status_code=400, detail="Dataset not found")
     response.headers["Content-Location"] = f"/{plot_img_path}"
     response.status_code = 204
     return response

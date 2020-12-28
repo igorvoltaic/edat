@@ -24,6 +24,8 @@
   border: 1px solid rgba(34, 36, 38, 0.15);
   border-radius: 0.28571429rem;
   transition: opacity 0.1s ease;
+  max-height: 15em;
+  overflow: auto;
 }
 .select-dropdown .dropdown-menu-item {
   padding: 0.5em;
@@ -62,7 +64,6 @@
 }
 #csv-config-menu div#csv-config-menu-header {
   margin-bottom: 2em;
-  margin-top: -1em;
 }
 #csv-config-menu div.ui.labeled.input {
   width: 60%;
@@ -73,7 +74,7 @@
   line-height: 2em;
 }
 #csv-config-menu #csv-config-menu-buttons {
-  margin-top: 2em;
+  margin-top: 1em;
 }
 
 .dataset-render-header {
@@ -213,6 +214,7 @@ div#home-container div#dataset-table table thead tr th:last-child {
 }
 
 div#data-table {
+  margin-bottom: 2em;
   overflow-x: scroll;
 }
 div#data-table table th.type-dropdown-cell {
@@ -220,39 +222,44 @@ div#data-table table th.type-dropdown-cell {
   padding: 0;
   height: 3em;
 }
-div#data-table table th.type-dropdown-cell select {
-  margin: 0;
-  padding-top: 2px;
-  text-align: center;
-  width: 97%;
+div#data-table table th.type-dropdown-cell div {
+  width: 100%;
   height: 100%;
-  background: #f9fafb !important;
-  border: 0;
-  /* remove the original arrow */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  -o-appearance: none;
-  /* no standardized syntax available, no ie-friendly solution available */
 }
-div#data-table table th.type-dropdown-cell select option {
-  text-align: center;
-  line-height: 2em;
+div#data-table table th.type-dropdown-cell div label {
+  display: none;
 }
-div#data-table table th.type-dropdown-cell select + i.icon {
-  float: right;
-  margin-top: -2.2em;
-  margin-right: 10px;
-  /* everything after this is just to cover up the original arrow */
-  /* (for browsers that don't support the syntax used above) */
-  background-color: transparent;
-  color: black !important;
-  padding-right: 5px;
+div#data-table table th.type-dropdown-cell div .select-dropdown {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  min-width: 7em;
+  margin: 0;
 }
-div#data-table table th.type-dropdown-cell i.icon {
-  z-index: 100;
-  appearance: none;
-  position: relative;
-  pointer-events: none;
+div#data-table table th.type-dropdown-cell div .select-dropdown i.icon {
+  margin: 0;
+  padding: 0;
+  position: unset;
+  padding-right: 0px;
+  height: 100%;
+  width: 20%;
+  display: flex;
+  align-items: center;
+}
+div#data-table table th.type-dropdown-cell div .select-dropdown .dropdown-default {
+  justify-content: center;
+  display: flex;
+  width: 80%;
+  height: 100%;
+  align-items: center;
+  color: #444444;
+  padding-left: 1em;
+}
+div#data-table table th.type-dropdown-cell div .select-dropdown .dropdown-menu {
+  height: auto;
+  width: auto;
 }
 
 @keyframes show {

@@ -3,6 +3,7 @@
 {% block dataset_render %}
 <script type="text/x-template" id="dataset-render-template">
     <div id="home-container" class="ui container">
+        <div v-if="error" class="ui container red message">[[ error ]]</div>
         <div class="dataset-render-header">
             <div class="render-options">
                 <h1>[[ datasetInfo.name ]]</h1>
