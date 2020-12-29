@@ -19,6 +19,8 @@ from helpers.exceptions import FileAccessError, PlotRenderError
 api_router = APIRouter()
 
 
+# DATASET CONTROLLERS
+
 @api_router.get("/dataset", response_model=PageDTO)
 @login_required
 def list_datasets(request: Request, page: int, query: str = None):
@@ -37,6 +39,26 @@ def get_dataset(request: Request, dataset_id: int):
     return dataset
 
 
+@api_router.post("/dataset", response_model=DatasetDTO, status_code=201)
+@login_required
+def create_dataset(request: Request, file_info: CreateDatasetDTO):
+    """ Create new dataset DB entry and return dataset info """
+    dataset = create_dataset_entry(file_info)  # type: ignore
+    if not dataset:
+        raise HTTPException(status_code=422, detail="Dataset creation error")
+    return dataset
+
+
+@api_router.post("/dataset/{dataset_id}", response_model=DatasetDTO)
+@login_required
+def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
+    """ Re-read dataset file using new user-supplied csv dialect """
+    dataset = read_dataset(dataset_id, dialect)
+    if not dataset:
+        raise HTTPException(status_code=422, detail="Dataset amendment error")
+    return dataset
+
+
 @api_router.put("/dataset/{dataset_id}", response_model=DatasetDTO)
 @login_required
 def edit_dataset(request: Request, dataset_id: int, body: DatasetDTO):
@@ -47,7 +69,35 @@ def edit_dataset(request: Request, dataset_id: int, body: DatasetDTO):
     return dataset
 
 
-@api_router.post("/dataset", response_model=CreateDatasetDTO)
+@api_router.delete("/dataset/{dataset_id}", response_model=DatasetInfoDTO)
+@login_required
+def delete_dataset(request: Request, dataset_id: int):
+    """ Call delete service and return deleted dataset info """
+    dataset = delete_dataset_entry(dataset_id)  # type: ignore
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    return dataset
+
+
+# TEMP FILE CONTROLLERS
+
+@api_router.get("/upload/{file_id}", response_model=CreateDatasetDTO)
+@login_required
+def read_tmpfile(request: Request, file_id: str):
+    """ Read dataset temporary file in with supplied id """
+    try:
+        dataset = read_temporary_file(file_id=file_id)
+    except FileAccessError as err:
+        raise HTTPException(
+                    status_code=503,
+                    detail=err.message
+        ) from err
+    if not dataset:
+        raise HTTPException(status_code=422, detail="Dataset reading error")
+    return dataset
+
+
+@api_router.post("/upload", response_model=CreateDatasetDTO)
 @login_required
 def upload_dataset_file(
             request: Request,
@@ -70,38 +120,12 @@ def upload_dataset_file(
     return response
 
 
-@api_router.post("/read/{dataset_id}", response_model=DatasetDTO)
-@login_required
-def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
-    """ Re-read dataset file using new user-supplied csv dialect """
-    dataset = read_dataset(dataset_id, dialect)  # type: ignore
-    if not dataset:
-        raise HTTPException(status_code=422, detail="Dataset amendment error")
-    return dataset
-
-
-@api_router.get("/read", response_model=CreateDatasetDTO)
-@login_required
-def read_tmpfile(request: Request, file_id: str):
-    """ Read dataset temporary file in with supplied id """
-    try:
-        dataset = read_temporary_file(file_id=file_id)
-    except FileAccessError as err:
-        raise HTTPException(
-                    status_code=503,
-                    detail=err.message
-        ) from err
-    if not dataset:
-        raise HTTPException(status_code=422, detail="Dataset reading error")
-    return dataset
-
-
-@api_router.post("/read", response_model=CreateDatasetDTO)
+@api_router.post("/upload/{file_id}", response_model=CreateDatasetDTO)
 @login_required
 def reread_tmpfile(request: Request, file_id: str, dialect: CsvDialectDTO):
     """ Re-read dataset temporary file using new user-supplied csv dialect """
     try:
-        dataset = handle_uploaded_file(file_id=file_id, dialect=dialect)
+        dataset = read_temporary_file(file_id=file_id, dialect=dialect)
     except FileAccessError as err:
         raise HTTPException(
                     status_code=503,
@@ -112,35 +136,17 @@ def reread_tmpfile(request: Request, file_id: str, dialect: CsvDialectDTO):
     return dataset
 
 
-@api_router.post("/create", response_model=DatasetDTO, status_code=201)
-@login_required
-def create_dataset(request: Request, file_info: CreateDatasetDTO):
-    """ Create new dataset DB entry and return dataset info """
-    dataset = create_dataset_entry(file_info)  # type: ignore
-    if not dataset:
-        raise HTTPException(status_code=422, detail="Dataset creation error")
-    return dataset
-
-
-@api_router.delete("/dataset/{dataset_id}", response_model=DatasetInfoDTO)
-@login_required
-def delete_dataset(request: Request, dataset_id: int):
-    """ Call delete service and return deleted dataset info """
-    dataset = delete_dataset_entry(dataset_id)  # type: ignore
-    if not dataset:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    return dataset
-
-
-@api_router.delete("/create/{file_id}", status_code=200)
+@api_router.delete("/upload/{file_id}", status_code=200)
 @login_required
 def delete_temparary_file(request: Request, file_id: str):
-    """ Remove temporary dataset file and return file id """
+    """ Remove temporary dataset file and confirmation message """
     deleted_file_id = delete_tmpfile(file_id)
     if not deleted_file_id:
         raise HTTPException(status_code=404, detail="File not found")
     return JSONResponse(content={"message": "submission cancelled"})
 
+
+# PLOT CONTROLERS
 
 @api_router.post("/render")
 @login_required

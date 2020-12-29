@@ -44,7 +44,7 @@ export default {
         // fetch dataset
         let path = null
         if (!this.id) {
-            path = `/api/read?file_id=${this.$route.query.file_id}`
+            path = `/api/upload/${this.$route.query.file_id}`
         } else {
             path = `/api/dataset/${this.id}`
         }
@@ -95,7 +95,7 @@ export default {
             let path = null
             let method = null
             if (!this.id) {
-                path= '/api/create'
+                path= '/api/dataset'
                 method = 'POST'
             } else {
                 path = `/api/dataset/${this.id}`
@@ -119,9 +119,9 @@ export default {
             let body = this.datasetInfo.csv_dialect
             let path = null
             if (!this.id) {
-                path = `/api/read?file_id=${this.datasetInfo.file_id}`
+                path = `/api/upload/${this.datasetInfo.file_id}`
             } else {
-                path = `/api/read/${this.id}`
+                path = `/api/dataset/${this.id}`
             }
             if (!this.datasetInfo.csv_dialect.start_row || this.datasetInfo.csv_dialect.start_row.length < 1) {
                 body.start_row = null
@@ -146,7 +146,7 @@ export default {
         onCancel: function() {
             this.edit = true;
             if (!this.id) {
-                fetch(`/api/create/${this.datasetInfo.file_id}`, {
+                fetch(`/api/upload/${this.datasetInfo.file_id}`, {
                     method: 'DELETE',
                 })
                 .then(response => response.json())

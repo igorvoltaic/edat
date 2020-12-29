@@ -50,7 +50,7 @@ export default {
             let data = new FormData()
             const fileInput = document.querySelector('#upload-csv-file');
             data.append('file', fileInput.files[0]);
-            const path = '/api/dataset'
+            const path = '/api/upload'
             const doAjax = async () => {
                 const response = await fetch(path, {
                     method: 'POST',
