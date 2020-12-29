@@ -47,34 +47,31 @@ export default {
         },
         addDataset: function() {
             this.error = null
-            var data = new FormData()
+            let data = new FormData()
             const fileInput = document.querySelector('#upload-csv-file');
             data.append('file', fileInput.files[0]);
-            fetch('/api/dataset', {
-                method: 'POST',
-                body: data,
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('File upload error')
-                }
-                return response.json()
-            })
-            .then(result => {
-                router.push({
-                    name: "editor",
-                    query: {
-                        file_id: result.file_id,
-                    },
+            const path = '/api/dataset'
+            const doAjax = async () => {
+                const response = await fetch(path, {
+                    method: 'POST',
+                    body: data,
                 });
-            })
-            .catch(ex => {
-                console.log(ex.message);
-                this.error = ex.message + ": please provide .csv file with at least two columns and two rows";
-            })
-
-            // Prevent default submission
-            return false;
+                if (response.ok) {
+                    const headers = response.headers;
+                    let file_id = headers.get('Location')
+                    router.push({
+                        name: "editor",
+                        query: {
+                            file_id,
+                        },
+                    });
+                } else { 
+                    const jVal = await response.json();
+                    this.error = jVal.detail + ": please provide .csv file with at least two columns and two rows";
+                    return Promise.reject(jVal.detail); 
+                }
+            }
+            doAjax().catch(console.log);       
         },
     }
 }

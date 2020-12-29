@@ -1,9 +1,13 @@
 """ Helper funciton to get line count of csv file
 """
 import csv
+import datetime
 from typing import Tuple, Type, Optional, List, Sequence
 
-from apps.datasets.dtos import CsvDialectDTO
+from dateutil.parser import parse as dateparse
+from django.conf import settings
+
+from apps.datasets.dtos import CsvDialectDTO, DatasetInfoDTO, ColumnType
 
 
 def count_lines(file: str, has_header: bool) -> int:
@@ -42,3 +46,73 @@ def handle_duplicate_fieldnames(fieldnames: Sequence[str]) -> Optional[List]:
         keys = list(i for i in range(len(fieldnames)))
         return keys
     return None
+
+
+def read_csv(
+            filename: str,
+            filepath: str,
+            csv_dialect: CsvDialectDTO = None
+        ) -> DatasetInfoDTO:
+    """ Count lines, fields and read several lines
+        from the file to determine datatypes
+    """
+    with open(filepath, 'r') as file:
+        data = file.read()
+    dialect, has_header = examine_csv(data, csv_dialect)
+    if not csv_dialect:
+        csv_dialect = CsvDialectDTO(
+            delimiter=dialect.delimiter,
+            quotechar=dialect.quotechar,
+            has_header=has_header
+        )
+    reader = csv.DictReader(data.split('\n'), dialect=dialect)
+    # return column keys in case dataset has duplicate column names
+    fieldnames = reader.fieldnames
+    if reader.fieldnames:
+        keys = handle_duplicate_fieldnames(reader.fieldnames)
+        if keys:
+            reader.fieldnames = keys
+    line_num = count_lines(data, has_header)
+    rows_to_read = settings.SAMPLE_ROWS_COUNT
+    if line_num < rows_to_read:
+        rows_to_read = line_num
+    datarows = [next(reader) for _ in range(1, rows_to_read)]
+    start_row = settings.CSV_STARTING_ROW
+    if csv_dialect.start_row:
+        start_row = csv_dialect.start_row
+    column_types = [check_type(str(v)) for v in datarows[start_row].values()]
+    file_info = DatasetInfoDTO(
+        name=filename,
+        height=line_num,
+        width=sum(1 for _ in fieldnames),
+        column_names=reader.fieldnames,
+        column_types=column_types,
+        datarows=datarows,
+        csv_dialect=csv_dialect
+    )
+    return file_info
+
+
+def check_type(str_value: str) -> ColumnType:
+    """ Try to determine datatype from a string """
+    try:
+        if isinstance(int(str_value), int):
+            return ColumnType.INT
+    except ValueError:
+        pass
+    try:
+        if isinstance(float(str_value), float):
+            return ColumnType.FLOAT
+    except ValueError:
+        pass
+    try:
+        if isinstance(dateparse(str_value), datetime.date):
+            return ColumnType.DATETIME
+    except ValueError:
+        pass
+    try:
+        if str_value.lower() == "true" or str_value.lower() == "false":
+            return ColumnType.BOOLEAN
+    except ValueError:
+        pass
+    return ColumnType.STRING

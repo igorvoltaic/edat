@@ -1,13 +1,10 @@
 """ Dataset app service layer
 """
-import csv
-import datetime
 import logging
 import os
 import shutil
 from typing import Optional
 
-from dateutil.parser import parse as dateparse
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
@@ -18,19 +15,19 @@ from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
         PlotDTO
 from apps.datasets.models import Dataset, Column, CsvDialect, Plot
-from helpers.csv_tools import examine_csv, count_lines, \
-        handle_duplicate_fieldnames
+from helpers.csv_tools import read_csv
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
-        get_tmpfile_path, get_tmpfile_name
+        get_tmpfile_path
 from helpers.plot_tools import render_plot, get_plot_hash
 
 
 __all__ = [
     'read_dataset', 'get_all_datasets', 'read_csv',
     'create_dataset_entry', 'delete_dataset_entry', 'handle_uploaded_file',
-    'delete_tmpfile', 'edit_dataset_entry', 'get_plot_img'
+    'delete_tmpfile', 'edit_dataset_entry', 'get_plot_img',
+    'read_temporary_file'
 ]
 
 
@@ -97,79 +94,44 @@ def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
 
 
 def handle_uploaded_file(
-            filename: Optional[str] = None,
-            file: Optional[bytes] = None,
-            file_id: Optional[str] = None,
-            dialect: Optional[CsvDialectDTO] = None
-        ) -> CreateDatasetDTO:
+            filename: str,
+            file: bytes,
+        ) -> str:
     """ Save file to Django's default temporary file location
         Read file data and return information about its contents
         Or reread information using user-supplied csv dialect
     """
-    file_id = file_id if file_id else get_file_id()
-    filename = filename if filename else get_tmpfile_name(file_id)
+    file_id = get_file_id()
     if not filename:
         raise FileAccessError("Cannot read temporary file")
     try:
-        tempfile = create_temporary_file(filename, file_id, file) if file \
-                else get_tmpfile_path(file_id)
+        tempfile = create_temporary_file(filename, file_id, file)
         if not tempfile:
             raise FileAccessError("Cannot read temporary file")
         logging.info("Temporary file with id %s was created", file_id)
-        try:
-            file_info = read_csv(filename, tempfile, dialect) if dialect \
-                else read_csv(filename, tempfile)
-        except (ValidationError, StopIteration, ValueError) as err:
-            raise FileAccessError("Invalid filename or contents") from err
     except (FileExistsError, OSError) as err:
         raise FileAccessError("Cannot save temporary file") from err
+    return file_id
+
+
+def read_temporary_file(
+            file_id: str,
+            dialect: Optional[CsvDialectDTO] = None
+        ) -> CreateDatasetDTO:
+    """ Read csv datafile and return information about its contents
+        Or reread information using user-supplied csv dialect
+    """
+    tempfile = get_tmpfile_path(file_id)
+    if not tempfile:
+        raise FileAccessError("Cannot read temporary file")
+    filename = os.path.split(tempfile)[1]
+    try:
+        file_info = read_csv(filename, tempfile, dialect) if dialect \
+            else read_csv(filename, tempfile)
+    except (ValidationError, StopIteration, ValueError) as err:
+        raise FileAccessError("Invalid filename or contents") from err
     create_dto = CreateDatasetDTO(**file_info.dict(), file_id=file_id)
     return create_dto
-
-
-def read_csv(
-            filename: str,
-            filepath: str,
-            csv_dialect: CsvDialectDTO = None
-        ) -> DatasetInfoDTO:
-    """ Count lines, fields and read several lines
-        from the file to determine datatypes
-    """
-    with open(filepath, 'r') as file:
-        data = file.read()
-    dialect, has_header = examine_csv(data, csv_dialect)
-    if not csv_dialect:
-        csv_dialect = CsvDialectDTO(
-            delimiter=dialect.delimiter,
-            quotechar=dialect.quotechar,
-            has_header=has_header
-        )
-    reader = csv.DictReader(data.split('\n'), dialect=dialect)
-    # return column keys in case dataset has duplicate column names
-    fieldnames = reader.fieldnames
-    if reader.fieldnames:
-        keys = handle_duplicate_fieldnames(reader.fieldnames)
-        if keys:
-            reader.fieldnames = keys
-    line_num = count_lines(data, has_header)
-    rows_to_read = settings.SAMPLE_ROWS_COUNT
-    if line_num < rows_to_read:
-        rows_to_read = line_num
-    datarows = [next(reader) for _ in range(1, rows_to_read)]
-    start_row = settings.CSV_STARTING_ROW
-    if csv_dialect.start_row:
-        start_row = csv_dialect.start_row
-    column_types = [check_type(str(v)) for v in datarows[start_row].values()]
-    file_info = DatasetInfoDTO(
-        name=filename,
-        height=line_num,
-        width=sum(1 for _ in fieldnames),
-        column_names=fieldnames,
-        column_types=column_types,
-        datarows=datarows,
-        csv_dialect=csv_dialect
-    )
-    return file_info
 
 
 @transaction.atomic
@@ -295,6 +257,7 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
     return None
 
 
+@transaction.atomic
 def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
     """ Service reads dataset file, draws plot with supplied parameters
         and returns plot file path
@@ -324,28 +287,3 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
     except Dataset.DoesNotExist:  # type: ignore
         return None
     return plot.file.name
-
-
-def check_type(str_value: str) -> ColumnType:
-    """ Try to determine datatype from a string """
-    try:
-        if isinstance(int(str_value), int):
-            return ColumnType.INT
-    except ValueError:
-        pass
-    try:
-        if isinstance(float(str_value), float):
-            return ColumnType.FLOAT
-    except ValueError:
-        pass
-    try:
-        if isinstance(dateparse(str_value), datetime.date):
-            return ColumnType.DATETIME
-    except ValueError:
-        pass
-    try:
-        if str_value.lower() == "true" or str_value.lower() == "false":
-            return ColumnType.BOOLEAN
-    except ValueError:
-        pass
-    return ColumnType.STRING

@@ -6,7 +6,8 @@ from fastapi.responses import JSONResponse
 
 from apps.datasets.services import get_all_datasets, read_dataset, \
     handle_uploaded_file, delete_tmpfile, edit_dataset_entry, \
-    create_dataset_entry, delete_dataset_entry, get_plot_img
+    create_dataset_entry, delete_dataset_entry, get_plot_img, \
+    read_temporary_file
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
         DatasetInfoDTO, CsvDialectDTO, PlotDTO
@@ -48,19 +49,25 @@ def edit_dataset(request: Request, dataset_id: int, body: DatasetDTO):
 
 @api_router.post("/dataset", response_model=CreateDatasetDTO)
 @login_required
-def upload_dataset_file(request: Request, file: UploadFile = File(...)):
-    """ Receive CSV file and return dataset information """
+def upload_dataset_file(
+            request: Request,
+            response: Response,
+            file: UploadFile = File(...)
+        ):
+    """ Receive CSV file and return temporary file id """
     if file.filename.split('.')[-1] != "csv" \
             or file.content_type != "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
     try:
-        file_info = handle_uploaded_file(file.filename, file.file.read())
+        file_id = handle_uploaded_file(file.filename, file.file.read())
     except FileAccessError as err:
         raise HTTPException(
                     status_code=503,
                     detail=err.message
         ) from err
-    return file_info
+    response.headers["Location"] = file_id
+    response.status_code = 204
+    return response
 
 
 @api_router.post("/read/{dataset_id}", response_model=DatasetDTO)
@@ -78,7 +85,7 @@ def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
 def read_tmpfile(request: Request, file_id: str):
     """ Read dataset temporary file in with supplied id """
     try:
-        dataset = handle_uploaded_file(file_id=file_id)
+        dataset = read_temporary_file(file_id=file_id)
     except FileAccessError as err:
         raise HTTPException(
                     status_code=503,
@@ -125,7 +132,7 @@ def delete_dataset(request: Request, dataset_id: int):
     return dataset
 
 
-@api_router.delete("/create/{file_id}", status_code=204)
+@api_router.delete("/create/{file_id}", status_code=200)
 @login_required
 def delete_temparary_file(request: Request, file_id: str):
     """ Remove temporary dataset file and return file id """

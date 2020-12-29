@@ -46,7 +46,7 @@ export default {
         if (!this.id) {
             path = `/api/read?file_id=${this.$route.query.file_id}`
         } else {
-            path = `/api/read/${this.id}`
+            path = `/api/dataset/${this.id}`
         }
         fetch(path)
         .then(response => {
