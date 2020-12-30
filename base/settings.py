@@ -4,7 +4,9 @@ Django settings for base project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
 load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,14 +24,14 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
+    'apps.visualizer',
+    'apps.datasets',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.visualizer',
-    'apps.datasets',
 ]
 
 MIDDLEWARE = [
@@ -113,6 +115,7 @@ STATICFILES_FINDERS = (
 )
 
 STATIC_URL = '/static/'
+# STATIC_ROOT = '/var/www/html/edat'
 
 MEDIA_URL = '/media/'
 

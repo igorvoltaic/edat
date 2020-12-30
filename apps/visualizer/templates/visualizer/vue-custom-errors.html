@@ -1,0 +1,22 @@
+{% load static %}
+
+{% block errors %}
+
+
+{# Vue templates #}
+
+<script type="text/x-template" id="pageNotFound-template">
+    <section class="ui raised very padded text container segment teal">
+        <h1>404 Page Not Found</h1>
+        <p>¯\_(ツ)_/¯</p>
+    </section>
+</script>
+
+<script type="text/x-template" id="serverError-template">
+    <section class="ui raised very padded text container segment teal">
+        <h1>500 Oops... Server Error</h1>
+        <p>¯\_(ツ)_/¯</p>
+    </section>
+</script>
+
+{% endblock %}

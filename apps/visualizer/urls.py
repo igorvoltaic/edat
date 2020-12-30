@@ -15,5 +15,6 @@ urlpatterns = [
     path('editor', views.index),
     path('editor/<int:id>', views.index),
     path('editor/<str:id>', views.index),
-
+    path('404', views.index),
+    path('500', views.index),
 ]

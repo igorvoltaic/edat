@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from .models import User
@@ -11,6 +11,14 @@ from .models import User
 @login_required
 def index(request, id=None):
     return render(request, "visualizer/index.html")
+
+
+def page_not_found(request):
+    return HttpResponseRedirect('/404')
+
+
+def server_error(request):
+    return HttpResponseRedirect('/500')
 
 
 def login_view(request):
