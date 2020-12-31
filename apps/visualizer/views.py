@@ -13,7 +13,7 @@ def index(request, id=None):
     return render(request, "visualizer/index.html")
 
 
-def page_not_found(request):
+def page_not_found(request, exception):
     return HttpResponseRedirect('/404')
 
 
