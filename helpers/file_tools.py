@@ -103,8 +103,8 @@ def get_plot_img_name(csv_file: str) -> str:
     image_files = glob.glob(f"{image_dir}/*.png")
     if len(image_files) < 1:
         image_name = "plot_{}.png".format(0)
-        return os.path.join(dataset_dir, image_name)
+        return os.path.join(image_dir, image_name)
     # add 1 to get next index for plot name
     next_index = max(list(map(get_plot_index, image_files))) + 1
     image_name = "plot_{}.png".format(next_index)
-    return os.path.join(dataset_dir, image_name)
+    return os.path.join(image_dir, image_name)
