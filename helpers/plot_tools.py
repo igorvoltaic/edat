@@ -13,7 +13,7 @@ from django.conf import settings
 from apps.datasets.dtos import CsvDialectDTO, PlotDTO
 
 from helpers.exceptions import FileAccessError, PlotRenderError
-from helpers.file_tools import get_dir_path
+from helpers.file_tools import get_plot_img_name
 
 
 matplotlib.use('Agg')
@@ -52,14 +52,11 @@ def pixel(px_size: int) -> int:
 
 
 def render_plot(
-        plot_hash: str,
         csv_file: str,
         plot_dto: PlotDTO,
         dialect: Optional[CsvDialectDTO] = None) -> str:
     """ Take filepath and axis selections and return plot img filepath """
-    dataset_dir = get_dir_path(csv_file)
-    image_name = "{}.png".format(plot_hash)
-    image_path = os.path.join(dataset_dir, image_name)
+    image_path = get_plot_img_name(csv_file)
     try:
         if dialect:
             data = pd.read_csv(

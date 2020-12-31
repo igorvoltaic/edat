@@ -250,7 +250,7 @@ def delete_dataset_entry(dataset_id: int) -> Optional[DatasetInfoDTO]:
 def delete_tmpfile(file_id: str) -> Optional[str]:
     """ Delete tempfile """
     tmp_file_dir = get_tmpfile_dirpath(file_id)
-    if tmp_file_dir:
+    if os.path.isdir(tmp_file_dir):
         shutil.rmtree(tmp_file_dir)
         logging.info("Temporary file with id %s was deleted", file_id)
         return file_id
@@ -268,7 +268,6 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
         plot = Plot.objects.filter(checksum=plot_hash).first()  # type:ignore
         if not plot:
             plot_img_path = render_plot(
-                    plot_hash,
                     dataset.file.name,
                     plot_dto,
                     dataset.csv_dialect

@@ -43,8 +43,7 @@ def create_tmpdir():
 
 def get_dir_path(file_path: str) -> str:
     """ return directory path """
-    dir_path = os.path.split(file_path)[0]
-    return dir_path
+    return os.path.split(file_path)[0]
 
 
 def get_file_id() -> str:
@@ -52,14 +51,9 @@ def get_file_id() -> str:
     return str(uuid.uuid4())
 
 
-def get_tmpfile_dirpath(file_id: str) -> Optional[str]:
+def get_tmpfile_dirpath(file_id: str) -> str:
     """ Return file directory path based on file's id """
-    tmp_file_dir = os.path.join(tmpdir(), file_id)
-    try:
-        glob.glob(f"{tmp_file_dir}/*.csv")[0]
-        return tmp_file_dir
-    except IndexError:
-        return None
+    return os.path.join(tmpdir(), file_id)
 
 
 def get_tmpfile_path(file_id: str) -> Optional[str]:
@@ -92,3 +86,25 @@ def move_tmpfile_to_media(file_id: str, dataset_id: int) -> Optional[str]:
     except OSError:
         FileAccessError("Cannot move temporary file")
     return dst
+
+
+def get_plot_index(name: str) -> int:
+    """ Return index from a plot filename """
+    name = name.split('.')[0]
+    return int(name.split('_')[1])
+
+
+def get_plot_img_name(csv_file: str) -> str:
+    """ Return filename for a new plot image """
+    dataset_dir = get_dir_path(csv_file)
+    image_dir = os.path.join(dataset_dir, 'images')
+    if not os.path.isdir(image_dir):
+        os.mkdir(image_dir)
+    image_files = glob.glob(f"{image_dir}/*.png")
+    if len(image_files) < 1:
+        image_name = "plot_{}.png".format(0)
+        return os.path.join(dataset_dir, image_name)
+    # add 1 to get next index for plot name
+    next_index = max(list(map(get_plot_index, image_files))) + 1
+    image_name = "plot_{}.png".format(next_index)
+    return os.path.join(dataset_dir, image_name)
