@@ -1,7 +1,9 @@
 import pytest
-from apps.visualizer.models import User
 
 
 @pytest.mark.django_db
-def test_new_user():
-    User.objects.create(username="someone", password="something")
+def test_user_create(django_user_model):
+    user = django_user_model.objects.create(
+            username='someone', password='password'
+            )
+    assert user.username == 'someone'

@@ -43,7 +43,13 @@ def get_dataset(request: Request, dataset_id: int):
 @login_required
 def create_dataset(request: Request, file_info: CreateDatasetDTO):
     """ Create new dataset DB entry and return dataset info """
-    dataset = create_dataset_entry(file_info)  # type: ignore
+    try:
+        dataset = create_dataset_entry(file_info)  # type: ignore
+    except FileAccessError as err:
+        raise HTTPException(
+            status_code=422,
+            detail=err.message
+        ) from err
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset creation error")
     return dataset
@@ -105,7 +111,7 @@ def upload_dataset_file(
             file: UploadFile = File(...)
         ):
     """ Receive CSV file and return temporary file id """
-    if file.filename.split('.')[-1] != "csv" \
+    if file.filename.split('.')[-1].lower() != "csv" \
             or file.content_type != "text/csv":
         raise HTTPException(status_code=422, detail="Unprocessable file type")
     try:

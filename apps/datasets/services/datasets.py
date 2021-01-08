@@ -207,14 +207,12 @@ def create_dataset_entry(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
             start_row=file_info.csv_dialect.start_row
         )
         csv_dialect.save()
-    except ValueError:
+    except (ValueError, AttributeError):
         logging.error(
             "Wasn't able to create a dialect db entry for dataset with id %s",
             dataset.id
         )
     file = move_tmpfile_to_media(file_info.file_id, dataset.id)
-    if not file:
-        return None
     logging.info("Temporary file with id %s was moved to media",
                  file_info.file_id)
     dataset.file = file
@@ -267,11 +265,6 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
         plot_hash = get_plot_hash(plot_dto)
         plot = Plot.objects.filter(checksum=plot_hash).first()  # type:ignore
         if not plot:
-            plot_img_path = render_plot(
-                    dataset.file.name,
-                    plot_dto,
-                    dataset.csv_dialect
-                )
             plot = Plot.objects.create(  # type: ignore
                 dataset=dataset,
                 height=plot_dto.height,
@@ -279,10 +272,18 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
                 plot_type=plot_dto.plot_type,
                 params=plot_dto.params.json(),
                 checksum=plot_hash,
-                file=plot_img_path
             )
             columns = dataset.columns.filter(name__in=plot_dto.columns)
             plot.columns.set(columns)
+            plot_img_path = render_plot(
+                    dataset.file.name,
+                    plot.id,
+                    plot_dto,
+                    dataset.csv_dialect
+                )
+            plot.file = plot_img_path
+            plot.save()
+            return plot_img_path
+        return plot.file.name
     except Dataset.DoesNotExist:  # type: ignore
         return None
-    return plot.file.name

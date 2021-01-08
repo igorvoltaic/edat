@@ -53,10 +53,11 @@ def pixel(px_size: int) -> int:
 
 def render_plot(
         csv_file: str,
+        plot_id: int,
         plot_dto: PlotDTO,
         dialect: Optional[CsvDialectDTO] = None) -> str:
     """ Take filepath and axis selections and return plot img filepath """
-    image_path = get_plot_img_name(csv_file)
+    image_path = get_plot_img_name(csv_file, plot_id)
     try:
         if dialect:
             data = pd.read_csv(
@@ -64,7 +65,6 @@ def render_plot(
                 delimiter=dialect.delimiter,
                 quotechar=dialect.quotechar,
                 skiprows=dialect.start_row,
-                # header=dialect.has_header
             )
         else:
             data = pd.read_csv(csv_file)

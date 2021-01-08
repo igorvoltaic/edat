@@ -12,7 +12,7 @@ def login_required(func):
     def wrapper_login_required(*args, **kwargs):
         request = kwargs['request']
         try:
-            session = Session.objects.get(pk=request.cookies.get('sessionid'))
+            _ = Session.objects.get(pk=request.cookies.get('sessionid'))
         except Session.DoesNotExist:  # type: ignore
             response = RedirectResponse(url=settings.LOGIN_URL)
             return response
