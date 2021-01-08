@@ -110,9 +110,6 @@ def check_type(str_value: str) -> ColumnType:
             return ColumnType.DATETIME
     except ValueError:
         pass
-    try:
-        if str_value.lower() == "true" or str_value.lower() == "false":
-            return ColumnType.BOOLEAN
-    except ValueError:
-        pass
+    if str_value.lower() == "true" or str_value.lower() == "false":
+        return ColumnType.BOOLEAN
     return ColumnType.STRING
