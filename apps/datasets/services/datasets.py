@@ -102,8 +102,6 @@ def handle_uploaded_file(
         Or reread information using user-supplied csv dialect
     """
     file_id = get_file_id()
-    if not filename:
-        raise FileAccessError("Cannot read temporary file")
     try:
         tempfile = create_temporary_file(filename, file_id, file)
         if not tempfile:

@@ -10,6 +10,7 @@
 ####
 
 ### User-Defined files ###
+.coverage
 .DS_Store
 .idea/*
 *.csv

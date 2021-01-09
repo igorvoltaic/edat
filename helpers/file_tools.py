@@ -73,7 +73,10 @@ def move_tmpfile_to_media(file_id: str, dataset_id: int) -> Optional[str]:
         raise FileAccessError("Cannot find temporary file")
     filename = os.path.split(src)[1]
     dst_dir = os.path.join(mediadir(), str(dataset_id))
-    os.mkdir(dst_dir)
+    try:
+        os.mkdir(dst_dir)
+    except FileExistsError:
+        raise FileAccessError("Cannot save dataset file")
     dst = os.path.join(dst_dir, filename)
     try:
         dst = shutil.move(src, dst)
