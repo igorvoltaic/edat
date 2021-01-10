@@ -1,6 +1,6 @@
 # EDAT - Exploratory data analysis tool
 
-A dataset visualization tool implemented using Seaborn python library, running on [Django](https://www.djangoproject.com) + [FastAPI](https://fastapi.tiangolo.com) for backend and [Vue.js](https://vuejs.org) for the frontend.
+A statistical dataset visualization tool implemented using [Seaborn](https://seaborn.pydata.org) python library, running on [Django](https://www.djangoproject.com) + [FastAPI](https://fastapi.tiangolo.com) for backend and [Vue.js](https://vuejs.org) for the frontend.
 
 ## Setup
 
