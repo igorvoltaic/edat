@@ -1,6 +1,6 @@
 # EDAT - Exploratory data analysis tool
 
-This is a tool for dataset visualization using Seabourne running on FastAPI with Django and VueJs for front-end part. 
+A dataset visualization tool implemented using Seaborn python library, running on [Django](https://www.djangoproject.com) + [FastAPI](https://fastapi.tiangolo.com) for backend and [Vue.js](https://vuejs.org) for the frontend.
 
 ## Setup
 
@@ -37,3 +37,8 @@ Linters: `Pyright`, `Pylint`, `Flake8`
 Static Type-checking: `Pyright`, `mypy`
 
 Formatters: `autopep8`, `yapf`
+
+
+## Testing
+
+To do the testing you need to `cd` into `testing` directory and run `pytest`
