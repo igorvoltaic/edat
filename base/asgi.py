@@ -16,7 +16,7 @@ from fastapi.middleware.wsgi import WSGIMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from apps.datasets.controllers.datasets import api_router
-from helpers.file_tools import create_tmpdir
+from helpers.file_tools import create_tmpdir, create_mediadir
 
 
 def get_application() -> FastAPI:
@@ -31,6 +31,7 @@ def get_application() -> FastAPI:
     app.include_router(api_router, prefix="/api")
     app.mount("/", WSGIMiddleware(get_wsgi_application()))
     create_tmpdir()
+    create_mediadir()
 
     return app
 

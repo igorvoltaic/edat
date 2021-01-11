@@ -33,6 +33,14 @@ def create_temporary_file(
     return filepath
 
 
+def create_mediadir():
+    """ create tmpdir and return its full path """
+    media_dir = mediadir()
+    if not os.path.isdir(media_dir):
+        os.mkdir(media_dir)
+    return media_dir
+
+
 def create_tmpdir():
     """ create tmpdir and return its full path """
     temp_dir = tmpdir()
