@@ -33,7 +33,13 @@ def list_datasets(request: Request, page: int, query: str = None):
 @login_required
 def get_dataset(request: Request, dataset_id: int):
     """ Open dataset and visualize data """
-    dataset = read_dataset(dataset_id)
+    try:
+        dataset = read_dataset(dataset_id)
+    except FileAccessError as err:
+        raise HTTPException(
+            status_code=404,
+            detail=err.message
+        ) from err
     if not dataset:
         raise HTTPException(status_code=404, detail="Dataset not found")
     return dataset
@@ -59,7 +65,13 @@ def create_dataset(request: Request, file_info: CreateDatasetDTO):
 @login_required
 def reread_dataset(request: Request, dataset_id: int, dialect: CsvDialectDTO):
     """ Re-read dataset file using new user-supplied csv dialect """
-    dataset = read_dataset(dataset_id, dialect)
+    try:
+        dataset = read_dataset(dataset_id, dialect)
+    except FileAccessError as err:
+        raise HTTPException(
+            status_code=404,
+            detail=err.message
+        ) from err
     if not dataset:
         raise HTTPException(status_code=422, detail="Dataset amendment error")
     return dataset
