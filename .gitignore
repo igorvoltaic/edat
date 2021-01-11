@@ -18,7 +18,8 @@ tmpdir/*
 media/*
 *.bak
 *$~
-apps/frontend_dev/node_modules
+frontend
+frontend/*
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
