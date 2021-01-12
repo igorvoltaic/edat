@@ -71,15 +71,15 @@ export default {
             this.plotDto.height = 600
             this.plotDto.width = 600
         },
-        updateHue: function() {
-            let hueCols = []
+        updateColumns: function() {
+            let selectedColumns = []
             let x = document.querySelector('input[name="x"]').value
             let y = document.querySelector('input[name="y"]').value
-            hueCols.push(x)
-            if (!hueCols.includes(y)) {
-                hueCols.push(y)
+            selectedColumns.push(x)
+            if (!selectedColumns.includes(y)) {
+                selectedColumns.push(y)
             }
-            this.plotDto.columns = hueCols
+            this.plotDto.columns = selectedColumns
         },
         renderDataset: function () {
             this.error = null

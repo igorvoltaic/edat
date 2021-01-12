@@ -10,32 +10,32 @@
                 <dropdown-select 
                  :items="datasetInfo.column_names"
                  :name="'y'"
-                 v-model="plotDto.params.y" @input="updateHue">Y-axis
+                 v-model="plotDto.params.y" @input="updateColumns">Y-axis
                 </dropdown-select>
                 <dropdown-select 
                  :items="datasetInfo.column_names"
                  :name="'x'"
-                 v-model="plotDto.params.x" @input="updateHue">X-axis
+                 v-model="plotDto.params.x" @input="updateColumns">X-axis
                 </dropdown-select>
                 <dropdown-select 
                  :items="plot_types"
                  v-model="plotDto.plot_type">Plot type
                 </dropdown-select>
                 <dropdown-select 
-                 :items="plotDto.columns"
+                 :items="datasetInfo.column_names"
                  v-model="plotDto.params.hue">Hue
                 </dropdown-select>
                 <div id="height" class="ui labeled input">
                     <label>
                         Height in px
                     </label>
-                    <input v-model="plotDto.height" type="text" placeholder="Default is 600px" name="height">
+                    <input v-model="plotDto.height" type="text" name="height">
                 </div>
                 <div id="width" class="ui labeled input">
                     <label>
                         Width in px
                     </label>
-                    <input v-model="plotDto.width" type="text" placeholder="Default is 600px" name="width">
+                    <input v-model="plotDto.width" type="text" name="width">
                 </div>
                 <button @click="renderDataset" class="ui button green" type="submit">Render</button>
                 <button @click="resetDto" class="ui button">Reset</button>
