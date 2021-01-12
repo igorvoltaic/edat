@@ -76,6 +76,7 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "visualizer.User"
+SESSION_COOKIE_AGE = 60 * 60  # session is 1 hour long
 
 LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = ''
