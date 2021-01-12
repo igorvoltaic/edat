@@ -18,8 +18,8 @@ export default {
             rows: [],
             plotDto: {
                 dataset_id: this.id,
-                height: 600,
-                width: 600,
+                height: 2600,
+                width: 2600,
                 plot_type: 'scatter',
                 params: {
                     x: null,
@@ -92,7 +92,7 @@ export default {
                     method: 'POST',
                     body: JSON.stringify(body)
                 });
-                if (response.ok) {
+                if (response.ok || response.status == 303) {
                     const headers = await response.headers;
                     this.plotImgPath = headers.get('Content-Location')
                 } else { 

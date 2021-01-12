@@ -79,12 +79,18 @@
     }
 
     div#rendered-plot {
-        max-width: 600px;
+        margin-left: 1em;
+        width: 100%;
         min-width: 600px;
         min-height: 600px;
         display: flex;
         align-items: center;
         justify-content: center;
+
+        i.times.icon {
+            font-size: 2em;
+            opacity: 0.5;
+        }
     }
     
     img {

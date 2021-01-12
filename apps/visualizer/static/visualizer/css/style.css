@@ -110,12 +110,17 @@
   margin-top: 1em;
 }
 .dataset-render-header div#rendered-plot {
-  max-width: 600px;
+  margin-left: 1em;
+  width: 100%;
   min-width: 600px;
   min-height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.dataset-render-header div#rendered-plot i.times.icon {
+  font-size: 2em;
+  opacity: 0.5;
 }
 .dataset-render-header img {
   max-width: 80%;

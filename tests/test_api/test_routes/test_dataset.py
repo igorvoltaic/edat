@@ -153,14 +153,16 @@ async def test_user_edit_dataset(
         ) -> None:
     get_dataset = await authorized_client.get("/api/dataset/1")
     dataset = json.loads(get_dataset.text)
+    dataset['comment'] = 'helloworld'
     response = await authorized_client.put(
             "/api/dataset/1",
             headers={"Content-Type": "application/json"},
             json=dataset,
-        )
+    )
     data = json.loads(response.text)
     assert response.status_code == HTTP_200_OK
     assert data['id'] == 1
+    assert dataset['comment'] == 'helloworld'
 
 
 @pytest.mark.django_db

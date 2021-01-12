@@ -3,9 +3,10 @@
 import logging
 import os
 import shutil
-from typing import Optional
+from typing import Optional, Tuple
 
 from django.core.paginator import Paginator
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
@@ -14,7 +15,7 @@ from pydantic import ValidationError
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
         PlotDTO
-from apps.datasets.models import Dataset, Column, CsvDialect, Plot
+from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.csv_tools import read_csv
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import create_temporary_file, get_file_id, \
@@ -61,7 +62,7 @@ def read_dataset(
                 )
                 file_info.column_names[index] = column.name
                 file_info.column_types[index] = column.datatype
-    except Dataset.DoesNotExist:  # type: ignore
+    except ObjectDoesNotExist:
         return None
     return DatasetDTO(
             **file_info.dict(),
@@ -103,12 +104,10 @@ def handle_uploaded_file(
     """
     file_id = get_file_id()
     try:
-        tempfile = create_temporary_file(filename, file_id, file)
-        if not tempfile:
-            raise FileAccessError("Cannot read temporary file")
-        logging.info("Temporary file with id %s was created", file_id)
+        create_temporary_file(filename, file_id, file)
     except (FileExistsError, OSError) as err:
         raise FileAccessError("Cannot save temporary file") from err
+    logging.info("Temporary file with id %s was created", file_id)
     return file_id
 
 
@@ -140,7 +139,7 @@ def edit_dataset_entry(
     """ Edit dataset Column types or dialect DB entries """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
-    except Dataset.DoesNotExist:  # type: ignore
+    except ObjectDoesNotExist:
         return None
     # In case we changed the delimiter number of columns was changed as well
     # and now we need to delete unnecessary columns and add new ones after that
@@ -224,7 +223,7 @@ def create_dataset_entry(file_info: CreateDatasetDTO) -> Optional[DatasetDTO]:
             comment=dataset.comment,
             column_names=file_info.column_names,
             column_types=file_info.column_types,
-        )
+    )
 
 
 @transaction.atomic
@@ -232,14 +231,14 @@ def delete_dataset_entry(dataset_id: int) -> Optional[DatasetInfoDTO]:
     """ Delete selected dataset """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
-        dataset.delete()
-        if dataset.file:
-            if os.path.isfile(dataset.file.name):
-                file_dir = get_dir_path(dataset.file.name)
-                shutil.rmtree(file_dir)
-                logging.info("Dataset file was deleted")
-    except Dataset.DoesNotExist:  # type: ignore
+    except ObjectDoesNotExist:
         return None
+    dataset.delete()
+    if dataset.file:
+        if os.path.isfile(dataset.file.name):
+            file_dir = get_dir_path(dataset.file.name)
+            shutil.rmtree(file_dir)
+            logging.info("Dataset file was deleted")
     return DatasetInfoDTO.from_orm(dataset)
 
 
@@ -254,34 +253,35 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
 
 
 @transaction.atomic
-def get_plot_img(plot_dto: PlotDTO) -> Optional[str]:
+def get_plot_img(plot_dto: PlotDTO) -> Optional[Tuple[str, bool]]:
     """ Service reads dataset file, draws plot with supplied parameters
         and returns plot file path
     """
     try:
         dataset = Dataset.objects.get(pk=plot_dto.dataset_id)  # type: ignore
-        plot_hash = get_plot_hash(plot_dto)
-        plot = Plot.objects.filter(checksum=plot_hash).first()  # type:ignore
-        if not plot:
-            plot = Plot.objects.create(  # type: ignore
-                dataset=dataset,
-                height=plot_dto.height,
-                width=plot_dto.width,
-                plot_type=plot_dto.plot_type,
-                params=plot_dto.params.json(),
-                checksum=plot_hash,
-            )
-            columns = dataset.columns.filter(name__in=plot_dto.columns)
-            plot.columns.set(columns)
-            plot_img_path = render_plot(
-                    dataset.file.name,
-                    plot.id,
-                    plot_dto,
-                    dataset.csv_dialect
-                )
-            plot.file = plot_img_path
-            plot.save()
-            return plot_img_path
-        return plot.file.name
-    except Dataset.DoesNotExist:  # type: ignore
+    except ObjectDoesNotExist:
         return None
+    plot_hash = get_plot_hash(plot_dto)
+    plot, created = dataset.plots.get_or_create(
+        checksum=plot_hash,
+        defaults={
+            'dataset': dataset,
+            'height': plot_dto.height,
+            'width': plot_dto.width,
+            'plot_type': plot_dto.plot_type,
+            'params': plot_dto.params.json(),
+        }
+    )
+    if not created:
+        return plot.file.name, created
+    columns = dataset.columns.filter(name__in=plot_dto.columns)
+    plot.columns.set(columns)
+    plot_img_path = render_plot(
+            dataset.file.name,
+            plot.id,
+            plot_dto,
+            dataset.csv_dialect
+    )
+    plot.file = plot_img_path
+    plot.save()
+    return plot_img_path, created

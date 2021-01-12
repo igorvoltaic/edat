@@ -5,28 +5,44 @@ database DB
 collections FS
 |||
 User -> API: Uploads .csv file
-API -> FS: Save .csv file into temp folder
-API --> User: Return parsed header specification and temp ID
+API -> FS: Save .csv file into temp directory
+API --> User: Return temp file ID
 ...
-User => API: CSV Dialect 
+User -> API: Temp file ID
+API -> FS: Read temp file using standart csv_sniffer
+User -> API: CSV Dialect 
+API -> FS: Re-read temp file
+User -> API: Temp file ID and correct dataset headers
+API -> FS: Re-read temp file
 API --> User: Return re-parsed header specification and temp ID
-User -> API: Temp ID and corrected version of dataset headers
-API -> FS: Read temp file
+...
 FS --> API: Bytes file content
 API -> DB: Create Dataset model
-DB --> API: Newly created model
-API -> DB: Create DatasetFile model
 DB --> API: Newly created model
 API -> DB: Create CsvDialect model
 DB --> API: Newly created model
 |||
 loop each column
-    API -> DB: Create DatasetColumn model
+    API -> DB: Create Column model
     DB --> API: Newly created model
     |||
-end
-API -> FS: Copy source file to MEDIA folder
-API -> FS: Remove temp folder
-API --> User: Return Dataset dto
+API -> FS: Copy source file to MEDIA directory
+API -> FS: Remove temp directory
+API --> User: Return Dataset DTO
+...
+User -> API: Dataset ID
+API -> DB: Get Dataset model
+DB --> API: Dataset model
+API --> FS: Read dataset file
+API -> User: Dataset information, dialect and parsed dataset rows
 |||
+User -> API: Dataset ID, type of plot and parameters for Seaborn
+User -> API: Dataset ID
+API -> DB: Get Dataset model
+API -> DB: Get hash digest of the Plot DTO
+API --> FS: Read dataset file
+FS --> API: Path of rendered plot image
+API -> User: Return 'Content-Location' header with the route to plot image
+|||
+end
 @enduml

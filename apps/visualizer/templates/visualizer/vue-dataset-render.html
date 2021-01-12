@@ -41,14 +41,16 @@
                 <button @click="resetDto" class="ui button">Reset</button>
             </div>
             <div id="rendered-plot" class="ui segment">
-                    <img v-if="plotImgPath" 
-                     @load="isLoading = false" 
-                     class="" 
-                     :class="{ hidden: isLoading }" 
-                     :src="plotImgPath">
+                <img v-if="plotImgPath" 
+                 @load="isLoading = false" 
+                 class="" 
+                 :class="{ hidden: isLoading }" 
+                 :src="plotImgPath">
                 <div v-if="isLoading" 
+                 :class="{ hidden: error }" 
                  class="ui active centered medium inline loader">
                 </div>
+                <i v-if="error" class="times icon"></i>
             </div>
         </div>
 		<div id="data-table" class="ui container">
