@@ -8,6 +8,7 @@ from dateutil.parser import parse as dateparse
 from django.conf import settings
 
 from apps.datasets.dtos import CsvDialectDTO, DatasetInfoDTO, ColumnType
+from helpers.exceptions import FileAccessError
 
 
 def count_lines(file: str, has_header: bool) -> int:
@@ -56,8 +57,15 @@ def read_csv(
     """ Count lines, fields and read several lines
         from the file to determine datatypes
     """
-    with open(filepath, 'r') as file:
-        data = file.read()
+    try:
+        with open(filepath, 'r') as file:
+            data = file.read()
+    except FileNotFoundError:
+        raise FileAccessError("Cannot find the dataset file")
+    except PermissionError:
+        raise FileAccessError("Dataset file reading is not permitted.")
+    except OSError:
+        raise FileAccessError("Cannot read dataset file")
     dialect, has_header = examine_csv(data, csv_dialect)
     if not csv_dialect:
         csv_dialect = CsvDialectDTO(

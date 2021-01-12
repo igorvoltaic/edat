@@ -73,7 +73,7 @@ def read_dataset(
 def get_all_datasets(page_num: int, query: str = None) -> PageDTO:
     """ Get all datasets from the DB """
     if not query:
-        datasets = Dataset.objects.order_by("-timestamp")  # type: ignore
+        datasets = Dataset.objects.all()  # type: ignore
     else:
         datasets = Dataset.objects.filter(  # type: ignore
                 Q(name__icontains=query) |

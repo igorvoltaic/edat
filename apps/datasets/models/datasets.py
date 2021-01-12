@@ -19,6 +19,9 @@ class Dataset(models.Model):
         models.Index(fields=['name']),
     ]
 
+    class Meta:
+        ordering = ['-timestamp']
+
 
 class CsvDialect(models.Model):
     """ CSV file delimiter, quotechar and has_header information """
