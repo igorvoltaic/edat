@@ -163,14 +163,15 @@ def edit_dataset_entry(
             )
             column.datatype = col_type
             column.save()
-    csv_dialect = CsvDialect.objects.get(  # type: ignore
+    csv_dialect = CsvDialect.objects.filter(  # type: ignore
         dataset_id=dataset.id
-    )
-    csv_dialect.delimiter = Delimiter(dto.csv_dialect.delimiter)
-    csv_dialect.quotechar = Quotechar(dto.csv_dialect.quotechar)
-    csv_dialect.has_header = dto.csv_dialect.has_header
-    csv_dialect.start_row = dto.csv_dialect.start_row
-    csv_dialect.save()
+    ).first()
+    if csv_dialect and dto.csv_dialect is not None:
+        csv_dialect.delimiter = Delimiter(dto.csv_dialect.delimiter)
+        csv_dialect.quotechar = Quotechar(dto.csv_dialect.quotechar)
+        csv_dialect.has_header = dto.csv_dialect.has_header
+        csv_dialect.start_row = dto.csv_dialect.start_row
+        csv_dialect.save()
     dataset.comment = dto.comment
     dataset.save()
     return dto

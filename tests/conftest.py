@@ -1,4 +1,5 @@
 import pytest
+import shutil
 import uuid
 from typing import Iterator
 
@@ -58,7 +59,15 @@ def session_id(create_user) -> str:
 
 
 @pytest.fixture
-async def authorized_client(client: AsyncClient, session_id) -> AsyncClient:
+async def authorized_client(
+            client: AsyncClient,
+            session_id
+        ) -> Iterator[AsyncClient]:
     session = await session_id
     client.cookies.set(name='sessionid', value=session)
     yield client
+
+
+@pytest.fixture
+def cleandir(path):
+    shutil.rmtree(path)
