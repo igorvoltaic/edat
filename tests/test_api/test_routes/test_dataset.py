@@ -123,7 +123,7 @@ def test_dataset(
 @pytest.mark.django_db
 @pytest.mark.usefixtures("app")
 class TestUnauthorizedClient:
-    async def test_unauthorized_user_cannot_get_api_route(
+    async def test_client_cannot_get_api_route(
             self, client: AsyncClient) -> None:
         response = await client.get("/api/dataset?page=1")
         response_url = str(response.url).split('/')[-1]
@@ -133,10 +133,11 @@ class TestUnauthorizedClient:
 
 
 @pytest.mark.django_db
-@pytest.mark.usefixtures("app", "authorized_client")
+@pytest.mark.usefixtures("app")
 class TestAuthorizedClient:
     async def test_user_cannot_get_non_existent_dataset(
-             self, authorized_client: AsyncClient) -> None:
+             self,
+             authorized_client: AsyncClient) -> None:
         response = await authorized_client.get("/api/dataset/1")
         data = response.json()
         assert len(response.history) == 0
