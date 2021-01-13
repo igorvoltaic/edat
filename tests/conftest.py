@@ -66,8 +66,3 @@ async def authorized_client(
     session = await session_id
     client.cookies.set(name='sessionid', value=session)
     yield client
-
-
-@pytest.fixture
-def cleandir(path):
-    shutil.rmtree(path)

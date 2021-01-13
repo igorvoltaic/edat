@@ -3,7 +3,7 @@
 import logging
 import os
 import shutil
-from typing import Optional, Tuple
+from typing import Optional
 
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,7 +14,7 @@ from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
-        PlotDTO
+        PlotDTO, PlotImageDTO
 from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.csv_tools import read_csv
 from helpers.exceptions import FileAccessError
@@ -254,7 +254,7 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
 
 
 @transaction.atomic
-def get_plot_img(plot_dto: PlotDTO) -> Optional[Tuple[str, bool]]:
+def get_plot_img(plot_dto: PlotDTO) -> Optional[PlotImageDTO]:
     """ Service reads dataset file, draws plot with supplied parameters
         and returns plot file path
     """
@@ -274,7 +274,7 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[Tuple[str, bool]]:
         }
     )
     if not created:
-        return plot.file.name, created
+        return PlotImageDTO(path=plot.file.name, created=created)
     columns = dataset.columns.filter(name__in=plot_dto.columns)
     plot.columns.set(columns)
     plot_img_path = render_plot(
@@ -285,4 +285,4 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[Tuple[str, bool]]:
     )
     plot.file = plot_img_path
     plot.save()
-    return plot_img_path, created
+    return PlotImageDTO(path=plot_img_path, created=created)

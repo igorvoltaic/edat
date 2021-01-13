@@ -175,8 +175,8 @@ def draw_dataset_plot(
         ):
     """ Return location of dataset image """
     try:
-        plot_img_path, created = get_plot_img(body)  # type: ignore
-        if not plot_img_path:
+        plot_img = get_plot_img(body)  # type: ignore
+        if not plot_img:
             raise HTTPException(status_code=404, detail="Dataset not found")
     except FileAccessError as err:
         raise HTTPException(
@@ -188,10 +188,10 @@ def draw_dataset_plot(
             status_code=400,
             detail=err.message
         ) from err
-    if created:
-        response.headers["Content-Location"] = f"/{plot_img_path}"
+    if plot_img.created:
+        response.headers["Content-Location"] = f"/{plot_img.path}"
         response.status_code = 201
     else:
-        response.headers["Content-Location"] = f"/{plot_img_path}"
+        response.headers["Content-Location"] = f"/{plot_img.path}"
         response.status_code = 303
     return response

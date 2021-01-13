@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, constr, conlist
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
     'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'PlotType',
-    'PlotDTO'
+    'PlotDTO', 'PlotImageDTO'
 ]
 
 
@@ -123,3 +123,9 @@ class PlotDTO(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PlotImageDTO(BaseModel):
+    """ Transfer object for plot images """
+    path: str
+    created: bool
