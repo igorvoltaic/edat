@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field, constr, conlist
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
     'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'PlotType',
-    'PlotDTO', 'PlotImageDTO'
+    'PlotDTO', 'PlotImageDTO', 'PlotTaskDTO', 'PlotTaskStatusDTO'
 ]
 
 
@@ -127,5 +127,15 @@ class PlotDTO(BaseModel):
 
 class PlotImageDTO(BaseModel):
     """ Transfer object for plot images """
-    path: str
-    created: bool
+    path: Optional[str]
+
+
+class PlotTaskDTO(PlotImageDTO):
+    """ Transfer object for render tasks """
+    task_id: Optional[str]
+    created: Optional[bool]
+
+
+class PlotTaskStatusDTO(PlotTaskDTO):
+    """ Transfer object for render task statuses """
+    ready: bool

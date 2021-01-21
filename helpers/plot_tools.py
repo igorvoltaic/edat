@@ -1,5 +1,4 @@
 """ Set of helper function to generate plots based on dataset data """
-import os
 import hashlib
 import logging
 from typing import Optional
@@ -11,6 +10,7 @@ import seaborn as sns
 from django.conf import settings
 
 from apps.datasets.dtos import CsvDialectDTO, PlotDTO
+from apps.datasets.models import Plot
 
 from helpers.exceptions import FileAccessError, PlotRenderError
 from helpers.file_tools import get_plot_img_name
@@ -58,36 +58,30 @@ def render_plot(
         dialect: Optional[CsvDialectDTO] = None) -> str:
     """ Take filepath and axis selections and return plot img filepath """
     image_path = get_plot_img_name(csv_file, plot_id)
-    try:
-        if dialect:
-            data = pd.read_csv(
-                csv_file,
-                delimiter=dialect.delimiter,
-                quotechar=dialect.quotechar,
-                skiprows=dialect.start_row,
-            )
-        else:
-            data = pd.read_csv(csv_file)
-    except (FileExistsError, OSError) as err:
-        raise FileAccessError("Cannot read dataset file") from err
-    sns_class = plotter_class(plot_dto.plot_type.value)
-    try:
-        plot = sns_class(
-           data=data,
-           kind=plot_dto.plot_type.value,
-           **plot_dto.params.dict()
+    if dialect:
+        data = pd.read_csv(
+            csv_file,
+            delimiter=dialect.delimiter,
+            quotechar=dialect.quotechar,
+            skiprows=dialect.start_row,
         )
-    except (ValueError, TypeError, NotImplementedError) as err:
-        raise PlotRenderError(str(err)) from err
+    else:
+        data = pd.read_csv(csv_file)
+    sns_class = plotter_class(plot_dto.plot_type.value)
+    plot = sns_class(
+       data=data,
+       kind=plot_dto.plot_type.value,
+       **plot_dto.params.dict()
+    )
     plot.fig.set_figwidth(pixel(plot_dto.width))
     plot.fig.set_figheight(pixel(plot_dto.height))
     plot.fig.dpi = DPI
-    try:
-        plt.savefig(
-            image_path,
-            bbox_inches='tight',
-        )
-    except (FileExistsError, OSError) as err:
-        raise FileAccessError("Cannot save plot image file") from err
+    plt.savefig(
+        image_path,
+        bbox_inches='tight',
+    )
     logging.info("Image '%s' was created", image_path)
+    plot = Plot.objects.get(pk=plot_id)  # type: ignore
+    plot.file = image_path
+    plot.save()
     return image_path

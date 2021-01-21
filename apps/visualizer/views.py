@@ -1,8 +1,11 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.password_validation \
+        import password_validators_help_text_html, validate_password
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.urls import reverse
 
 from .models import User
@@ -58,6 +61,12 @@ def register(request):
                 "register_fail_message": "Passwords must match."
             })
 
+        try:
+            validate_password(password)
+        except ValidationError:
+            return render(request, "visualizer/index.html", {
+                "register_fail_message": password_validators_help_text_html
+            })
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)

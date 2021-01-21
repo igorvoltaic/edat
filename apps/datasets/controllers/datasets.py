@@ -3,14 +3,15 @@
 from fastapi import APIRouter, HTTPException, File, UploadFile, Request, \
         Response
 from fastapi.responses import JSONResponse
+from celery.exceptions import NotRegistered
 
 from apps.datasets.services import get_all_datasets, read_dataset, \
     handle_uploaded_file, delete_tmpfile, edit_dataset_entry, \
     create_dataset_entry, delete_dataset_entry, get_plot_img, \
-    read_temporary_file
+    read_temporary_file, get_render_status
 
 from apps.datasets.dtos import CreateDatasetDTO, DatasetDTO, PageDTO, \
-        DatasetInfoDTO, CsvDialectDTO, PlotDTO
+        DatasetInfoDTO, CsvDialectDTO, PlotDTO, PlotTaskStatusDTO
 
 from helpers.auth_tools import login_required
 from helpers.exceptions import FileAccessError, PlotRenderError
@@ -175,23 +176,31 @@ def draw_dataset_plot(
         ):
     """ Return location of dataset image """
     try:
-        plot_img = get_plot_img(body)  # type: ignore
-        if not plot_img:
-            raise HTTPException(status_code=404, detail="Dataset not found")
+        plot = get_plot_img(body)  # type: ignore
     except FileAccessError as err:
-        raise HTTPException(
-            status_code=404,
-            detail=err.message
-        ) from err
-    except PlotRenderError as err:
-        raise HTTPException(
-            status_code=400,
-            detail=err.message
-        ) from err
-    if plot_img.created:
-        response.headers["Content-Location"] = f"/{plot_img.path}"
-        response.status_code = 201
+        raise HTTPException(status_code=404, detail=err.message) from err
+    if not plot:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    if plot.created:
+        response.headers["Content-Location"] = f"/api/render/{plot.task_id}"
+        response.status_code = 202
     else:
-        response.headers["Content-Location"] = f"/{plot_img.path}"
+        response.headers["Content-Location"] = f"/{plot.path}"
         response.status_code = 303
     return response
+
+
+@api_router.get("/render/{task_id}", response_model=PlotTaskStatusDTO)
+@login_required
+def check_render_status(
+            request: Request,
+            task_id: str
+        ):
+    """ Return status of dataset plot rendering process """
+    try:
+        render_status = get_render_status(task_id)
+    except FileAccessError as err:
+        raise HTTPException(status_code=404, detail=err.message) from err
+    except PlotRenderError as err:
+        raise HTTPException(status_code=400, detail=err.message) from err
+    return render_status

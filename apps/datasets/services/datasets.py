@@ -5,6 +5,7 @@ import os
 import shutil
 from typing import Optional
 
+from celery.result import AsyncResult
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -14,21 +15,22 @@ from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
-        PlotDTO, PlotImageDTO
+        PlotDTO, PlotTaskDTO, PlotTaskStatusDTO
 from apps.datasets.models import Dataset, Column, CsvDialect
 from helpers.csv_tools import read_csv
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
         get_tmpfile_path
-from helpers.plot_tools import render_plot, get_plot_hash
+from helpers.plot_tools import get_plot_hash
+from apps.datasets.tasks import render_plot_task
 
 
 __all__ = [
     'read_dataset', 'get_all_datasets', 'read_csv',
     'create_dataset_entry', 'delete_dataset_entry', 'handle_uploaded_file',
     'delete_tmpfile', 'edit_dataset_entry', 'get_plot_img',
-    'read_temporary_file'
+    'read_temporary_file', 'get_render_status'
 ]
 
 
@@ -254,7 +256,7 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
 
 
 @transaction.atomic
-def get_plot_img(plot_dto: PlotDTO) -> Optional[PlotImageDTO]:
+def get_plot_img(plot_dto: PlotDTO) -> Optional[PlotTaskDTO]:
     """ Service reads dataset file, draws plot with supplied parameters
         and returns plot file path
     """
@@ -274,15 +276,29 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[PlotImageDTO]:
         }
     )
     if not created:
-        return PlotImageDTO(path=plot.file.name, created=created)
+        if not os.path.isfile(f"{plot.file.path}"):
+            raise FileAccessError("Cannot find plot image file")
+        return PlotTaskDTO(path=plot.file.name, created=created)
     columns = dataset.columns.filter(name__in=plot_dto.columns)
     plot.columns.set(columns)
-    plot_img_path = render_plot(
+    result = render_plot_task.delay(  # type: ignore
             dataset.file.name,
             plot.id,
-            plot_dto,
-            dataset.csv_dialect
+            plot_dto.dict(),
+            CsvDialectDTO.from_orm(dataset.csv_dialect).dict()
     )
-    plot.file = plot_img_path
-    plot.save()
-    return PlotImageDTO(path=plot_img_path, created=created)
+    return PlotTaskDTO(task_id=result.task_id, created=created)
+
+
+def get_render_status(task_id: str) -> PlotTaskStatusDTO:
+    task = AsyncResult(task_id)
+    if task.ready():
+        try:
+            return PlotTaskStatusDTO(
+                    path=f"/{task.get()}",
+                    task_id=task_id,
+                    ready=True
+            )
+        except (FileNotFoundError, FileExistsError, OSError) as err:
+            raise FileAccessError("Cannot find plot image file") from err
+    return PlotTaskStatusDTO(task_id=task_id, ready=False)

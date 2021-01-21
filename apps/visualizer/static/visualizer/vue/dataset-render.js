@@ -59,6 +59,9 @@ export default {
     },
 
     methods: {
+        sleep: function (ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        },
         resetDto: function() {
             document.querySelectorAll('.dropdown-default').forEach(elem => {
                 elem.innerHTML = 'Select'
@@ -81,6 +84,24 @@ export default {
             }
             this.plotDto.columns = selectedColumns
         },
+        getRenderTask: function (path) {
+            const doAjax = async () => {
+                const response = await fetch(path, {
+                    method: 'GET',
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    this.plotImgPath = result.path
+                } else if (response.status == 400)  { 
+                    this.error = result.detail
+                    return Promise.reject(result.detail); 
+                } else if (response.status == 404)  { 
+                    this.error = 'Plot image not found'
+                    return Promise.reject(result.detail); 
+                } 
+            }
+            doAjax().catch(console.log);       
+        },
         renderDataset: function () {
             this.error = null
             this.isLoading = true
@@ -92,13 +113,28 @@ export default {
                     method: 'POST',
                     body: JSON.stringify(body)
                 });
-                if (response.ok || response.status == 303) {
+                if (response.status == 202) {
+                    const headers = await response.headers;
+                    const status_path = headers.get('Content-Location')
+                    while (!this.plotImgPath) {
+                        if (this.error) {
+                            break
+                        }
+                        this.getRenderTask(status_path)
+                        await this.sleep(5000)
+                    }
+                } else if (response.status == 307) {
+                    const headers = await response.headers;
+                    router.push({
+                        name: 'login',
+                    });
+                } else if (response.status == 303) {
                     const headers = await response.headers;
                     this.plotImgPath = headers.get('Content-Location')
                 } else { 
-                    const jVal = await response.json();
-                    this.error = jVal.detail
-                    return Promise.reject(jVal.detail); 
+                    const result = await response.json();
+                    this.error = result.detail
+                    return Promise.reject(result.detail); 
                 }
             }
             doAjax().catch(console.log);       

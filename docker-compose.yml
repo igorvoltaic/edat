@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+    rabbitmq:
+        image: "rabbitmq:3.8.9-alpine"
+        ports:
+            - "4369:4369"
+            - "5672:5672"
+            - "25672:25672"
+            - "15672:15672"
+        env_file:
+            - .env
+
+    app:
+        build: .
+        image: edat
+        restart: on-failure
+        ports:
+            - "8000:8000"
+        env_file:
+            - .env
+        depends_on:
+            - db
+            - rabbitmq
+        volumes:
+            - "./:/app"
+        command: bash -c 'python manage.py migrate && uvicorn --host 0.0.0.0 base.asgi:app --workers 5'
+
+    worker:
+        image: edat
+        restart: on-failure
+        env_file:
+            - .env
+        depends_on:
+            - db
+            - app
+            - rabbitmq
+        command: celery -A base worker -l INFO
+        volumes:
+            - "./:/app"
+
+    db:
+        image: postgres:13.1-alpine
+        ports:
+            - "5432:5432"
+        env_file:
+            - .env

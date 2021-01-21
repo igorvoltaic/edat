@@ -1,5 +1,6 @@
 """ Collection of helper function for working with files and directories """
 import glob
+import logging
 import os
 import shutil
 import uuid
@@ -83,18 +84,15 @@ def move_tmpfile_to_media(file_id: str, dataset_id: int) -> Optional[str]:
     dst_dir = os.path.join(mediadir(), str(dataset_id))
     try:
         os.mkdir(dst_dir)
-    except FileExistsError:
-        raise FileAccessError("Cannot save dataset file")
+    except FileExistsError as err:
+        logging.info(str(err))
+        raise FileAccessError("Cannot save dataset file") from err
     dst = os.path.join(dst_dir, filename)
     try:
         dst = shutil.move(src, dst)
-    # For permission related errors
-    except FileNotFoundError:
-        raise FileAccessError("Cannot move temporary file")
-    except PermissionError:
-        raise FileAccessError("Temporary file moving is not permitted.")
-    except OSError:
-        raise FileAccessError("Cannot move temporary file")
+    except (FileNotFoundError, PermissionError, OSError) as err:
+        logging.info(str(err))
+        raise FileAccessError("Cannot move temporary file") from err
     return dst
 
 

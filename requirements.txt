@@ -19,6 +19,7 @@ packaging==20.8
 pandas==1.1.4
 Pillow==8.0.1
 pluggy==0.13.1
+psycopg2-binary==2.8.6
 py==1.10.0
 pydantic==1.7.2
 pyparsing==2.4.7
@@ -42,3 +43,13 @@ sqlparse==0.4.1
 starlette==0.13.6
 toml==0.10.2
 uvicorn==0.12.2
+celery==5.0.5
+wcwidth==0.2.5
+amqp==5.0.2
+prompt-toolkit==3.0.10
+click-didyoumean==0.0.3
+kombu==5.0.2
+vine==5.0.0
+billiard==3.6.3.0
+click-repl==0.1.6
+django-celery-results==2.0.1
