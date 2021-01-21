@@ -122,6 +122,9 @@
   font-size: 2em;
   opacity: 0.5;
 }
+.dataset-render-header div#rendered-plot .message {
+  width: 100%;
+}
 .dataset-render-header img {
   max-width: 80%;
   animation-name: show;
@@ -161,7 +164,8 @@ div#site-subheader.item {
 div#home-container .message {
   display: flex;
   justify-content: center;
-  width: 80%;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 div#home-container form.ui.form {
   padding-top: 4em;
@@ -293,16 +297,17 @@ div#data-table table th.type-dropdown-cell div .select-dropdown .dropdown-menu {
   }
 }
 @media screen and (max-width: 767px) {
-  #rendered-plot {
+  .dataset-render-header {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .dataset-render-header div#rendered-plot {
     width: 100% !important;
     min-width: 100% !important;
     max-width: 100% !important;
     object-fit: scale-down;
-  }
-
-  .dataset-render-header {
-    display: flex;
-    flex-direction: column-reverse;
+    margin-left: 0;
+    margin-bottom: 1em;
   }
   .dataset-render-header div.render-options button {
     margin-right: 0;
@@ -325,7 +330,8 @@ div#data-table table th.type-dropdown-cell div .select-dropdown .dropdown-menu {
   div#home-container button.ui:nth-child(4) .ui.button .message {
     display: flex;
     justify-content: center;
-    width: 80%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
   div#home-container form.ui.form {
     display: flex;

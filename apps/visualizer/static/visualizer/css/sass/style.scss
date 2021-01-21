@@ -91,6 +91,10 @@
             font-size: 2em;
             opacity: 0.5;
         }
+
+        .message {
+            width: 100%
+        }
     }
     
     img {
@@ -138,7 +142,8 @@ div#home-container {
     .message {
 		display: flex;
 		justify-content: center;
-		width: 80%;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
 
     form.ui.form {
@@ -304,16 +309,18 @@ div#data-table {
 }
 
 @media screen and (max-width: 767px) {
-   #rendered-plot {
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-        object-fit: scale-down;
-
-    }
     .dataset-render-header {
         display: flex;
         flex-direction: column-reverse;
+
+        div#rendered-plot {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            object-fit: scale-down;
+            margin-left: 0;
+            margin-bottom: 1em;
+        }
         div.render-options {
             button {
                 margin-right: 0;
@@ -344,7 +351,8 @@ div#data-table {
         .message {
             display: flex;
             justify-content: center;
-            width: 80%;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
         }
 
         form.ui.form {
