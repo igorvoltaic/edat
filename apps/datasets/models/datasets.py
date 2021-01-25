@@ -4,6 +4,7 @@ from django.db import models
 from django_enum_choices.fields import EnumChoiceField
 
 from apps.datasets.dtos import ColumnType, Delimiter, Quotechar, PlotType
+from django_celery_results.models import TaskResult
 
 
 class Dataset(models.Model):
@@ -14,13 +15,13 @@ class Dataset(models.Model):
     width = models.IntegerField()
     comment = models.CharField(max_length=255, blank=True)
     file = models.FileField(null=True)
-    indexes = [
-        models.Index(fields=['-timestamp']),
-        models.Index(fields=['name']),
-    ]
 
     class Meta:
         ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['name']),
+        ]
 
 
 class CsvDialect(models.Model):
@@ -49,18 +50,23 @@ class Column(models.Model):
 
 
 class Plot(models.Model):
-    plot_type = EnumChoiceField(PlotType)
-    checksum = models.CharField(max_length=32)
-    height = models.IntegerField()
-    width = models.IntegerField()
     dataset = models.ForeignKey(
         Dataset,
         on_delete=models.CASCADE,
         related_name="plots"
     )
-    columns = models.ManyToManyField('Column')
+    plot_type = EnumChoiceField(PlotType)
+    checksum = models.CharField(max_length=32)
+    height = models.IntegerField()
+    width = models.IntegerField()
+    columns = models.ManyToManyField('Column', db_index=True)
     params = models.JSONField()
     file = models.FileField(null=True)
-    indexes = [
-        models.Index(fields=['checksum']),
-    ]
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['checksum']),
+            models.Index(fields=['plot_type']),
+            models.Index(fields=['dataset']),
+            models.Index(fields=['file']),
+        ]

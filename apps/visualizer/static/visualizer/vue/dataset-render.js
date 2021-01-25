@@ -71,8 +71,8 @@ export default {
             this.plotDto.params.y = null
             this.plotDto.params.hue = null
             this.plotDto.columns = []
-            this.plotDto.height = 600
-            this.plotDto.width = 600
+            this.plotDto.height = 2600
+            this.plotDto.width = 2600
         },
         updateColumns: function() {
             let selectedColumns = []
@@ -90,13 +90,13 @@ export default {
                     method: 'GET',
                 });
                 const result = await response.json();
-                if (response.ok) {
-                    this.plotImgPath = result.path
+                if (response.ok && result.result) {
+                    this.plotImgPath = `/${result.result}`
                 } else if (response.status == 400)  { 
                     this.error = result.detail
                     return Promise.reject(result.detail); 
                 } else if (response.status == 404)  { 
-                    this.error = 'Plot image not found'
+                    this.error = 'Plot not found'
                     return Promise.reject(result.detail); 
                 } 
             }

@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field, constr, conlist
 __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
     'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'PlotType',
-    'PlotDTO', 'PlotImageDTO', 'PlotTaskDTO', 'PlotTaskStatusDTO'
+    'CreatePlotDTO', 'PlotDTO', 'PlotTaskDTO', 'PlotTaskStatusDTO',
+    'PlotTaskPageDTO'
 ]
 
 
@@ -110,7 +111,7 @@ class PlotParams(BaseModel):
     hue: Optional[str]
 
 
-class PlotDTO(BaseModel):
+class CreatePlotDTO(BaseModel):
     """ transfer object for data which must be
         provided in order to create a dataset plot
     """
@@ -125,17 +126,28 @@ class PlotDTO(BaseModel):
         orm_mode = True
 
 
-class PlotImageDTO(BaseModel):
-    """ Transfer object for plot images """
-    path: Optional[str]
+class PlotDTO(CreatePlotDTO):
+    """ Transfer object for plots data """
+    id: int
 
 
-class PlotTaskDTO(PlotImageDTO):
+class PlotTaskDTO(BaseModel):
     """ Transfer object for render tasks """
-    task_id: Optional[str]
-    created: Optional[bool]
+    id: Optional[str]
+    result: Optional[str]
+    plot: Optional[PlotDTO]
+    status: Optional[str]
 
 
 class PlotTaskStatusDTO(PlotTaskDTO):
     """ Transfer object for render task statuses """
     ready: bool
+
+
+class PlotTaskPageDTO(BaseModel):
+    """ transfer object for tasks pages """
+    tasks: List[PlotTaskDTO]
+    has_next: bool
+    has_prev: bool
+    page_num: int
+    num_pages: int

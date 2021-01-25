@@ -1,11 +1,14 @@
 """ Dataset app service layer
 """
+import ast
+import json
 import logging
 import os
 import shutil
 from typing import Optional
 
 from celery.result import AsyncResult
+from django_celery_results.models import TaskResult
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -15,22 +18,23 @@ from pydantic import ValidationError
 
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
-        PlotDTO, PlotTaskDTO, PlotTaskStatusDTO
+        CreatePlotDTO, PlotTaskDTO, PlotTaskStatusDTO, PlotTaskPageDTO, \
+        PlotDTO
 from apps.datasets.models import Dataset, Column, CsvDialect
+from apps.datasets.tasks import render_plot_task
 from helpers.csv_tools import read_csv
 from helpers.exceptions import FileAccessError
 from helpers.file_tools import create_temporary_file, get_file_id, \
         move_tmpfile_to_media, get_tmpfile_dirpath, get_dir_path, \
         get_tmpfile_path
 from helpers.plot_tools import get_plot_hash
-from apps.datasets.tasks import render_plot_task
 
 
 __all__ = [
     'read_dataset', 'get_all_datasets', 'read_csv',
     'create_dataset_entry', 'delete_dataset_entry', 'handle_uploaded_file',
     'delete_tmpfile', 'edit_dataset_entry', 'get_plot_img',
-    'read_temporary_file', 'get_render_status'
+    'read_temporary_file', 'get_render_status', 'get_all_tasks'
 ]
 
 
@@ -256,7 +260,7 @@ def delete_tmpfile(file_id: str) -> Optional[str]:
 
 
 @transaction.atomic
-def get_plot_img(plot_dto: PlotDTO) -> Optional[PlotTaskDTO]:
+def get_plot_img(plot_dto: CreatePlotDTO) -> Optional[PlotTaskDTO]:
     """ Service reads dataset file, draws plot with supplied parameters
         and returns plot file path
     """
@@ -275,19 +279,15 @@ def get_plot_img(plot_dto: PlotDTO) -> Optional[PlotTaskDTO]:
             'params': plot_dto.params.json(),
         }
     )
+    plot_dto = PlotDTO(**plot_dto.dict(), id=plot.id)
     if not created:
-        if not os.path.isfile(f"{plot.file.path}"):
+        if not os.path.isfile(plot.file.path):
             raise FileAccessError("Cannot find plot image file")
-        return PlotTaskDTO(path=plot.file.name, created=created)
+        return PlotTaskDTO(plot=plot_dto, result=plot.file.name)
     columns = dataset.columns.filter(name__in=plot_dto.columns)
     plot.columns.set(columns)
-    result = render_plot_task.delay(  # type: ignore
-            dataset.file.name,
-            plot.id,
-            plot_dto.dict(),
-            CsvDialectDTO.from_orm(dataset.csv_dialect).dict()
-    )
-    return PlotTaskDTO(task_id=result.task_id, created=created)
+    task = render_plot_task.delay(plot_dto.dict())  # type: ignore
+    return PlotTaskDTO(id=task.task_id)
 
 
 def get_render_status(task_id: str) -> PlotTaskStatusDTO:
@@ -295,10 +295,40 @@ def get_render_status(task_id: str) -> PlotTaskStatusDTO:
     if task.ready():
         try:
             return PlotTaskStatusDTO(
-                    path=f"/{task.get()}",
-                    task_id=task_id,
-                    ready=True
+                id=task_id,
+                result=task.get(),
+                ready=task.ready()
             )
         except (FileNotFoundError, FileExistsError, OSError) as err:
             raise FileAccessError("Cannot find plot image file") from err
-    return PlotTaskStatusDTO(task_id=task_id, ready=False)
+    return PlotTaskStatusDTO(id=task_id, ready=task.ready())
+
+
+def get_all_tasks(page_num: int = None, query: str = None) -> PlotTaskPageDTO:
+    """ Get all datasets from the DB """
+    if not query:
+        tasks = TaskResult.objects.order_by("-date_created")  # type: ignore
+    else:
+        tasks = TaskResult.objects.filter(  # type: ignore
+                Q(plot_type__icontains=query) |
+                Q(status__icontains=query) |
+                Q(dataset__icontains=query) |
+                Q(file__icontains=query)
+        )
+    paginator = Paginator(tasks, settings.ITEMS_PER_PAGE)
+    if not page_num:
+        page_num = 1
+    page = paginator.get_page(page_num)
+    page_data = PlotTaskPageDTO(
+        tasks=[PlotTaskDTO(
+                id=t.task_id,
+                plot=PlotDTO(**ast.literal_eval(json.loads(t.task_args))[0]),
+                result=t.result.strip('"'),
+                status=t.status
+            ) for t in page.object_list],
+        has_next=page.has_next(),
+        has_prev=page.has_previous(),
+        page_num=page.number,
+        num_pages=paginator.num_pages
+    )
+    return page_data

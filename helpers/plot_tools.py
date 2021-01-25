@@ -9,7 +9,7 @@ import pandas as pd
 import seaborn as sns
 from django.conf import settings
 
-from apps.datasets.dtos import CsvDialectDTO, PlotDTO
+from apps.datasets.dtos import CsvDialectDTO, PlotDTO, CreatePlotDTO
 from apps.datasets.models import Plot
 
 from helpers.exceptions import FileAccessError, PlotRenderError
@@ -39,7 +39,7 @@ def plotter_class(kind):
     }[kind]
 
 
-def get_plot_hash(dto: PlotDTO) -> str:
+def get_plot_hash(dto: CreatePlotDTO) -> str:
     """ return DTO's md5 hash """
     hash_object = hashlib.md5(str(dto).encode())
     return hash_object.hexdigest()
@@ -53,11 +53,10 @@ def pixel(px_size: int) -> int:
 
 def render_plot(
         csv_file: str,
-        plot_id: int,
         plot_dto: PlotDTO,
         dialect: Optional[CsvDialectDTO] = None) -> str:
     """ Take filepath and axis selections and return plot img filepath """
-    image_path = get_plot_img_name(csv_file, plot_id)
+    image_path = get_plot_img_name(csv_file, plot_dto.id)
     if dialect:
         data = pd.read_csv(
             csv_file,
@@ -81,7 +80,4 @@ def render_plot(
         bbox_inches='tight',
     )
     logging.info("Image '%s' was created", image_path)
-    plot = Plot.objects.get(pk=plot_id)  # type: ignore
-    plot.file = image_path
-    plot.save()
     return image_path
