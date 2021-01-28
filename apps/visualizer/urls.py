@@ -13,6 +13,7 @@ urlpatterns = [
     # VueJs paths
     path('dataset/<int:id>', views.index),
     path('editor', views.index),
+    path('tasks', views.index),
     path('editor/<int:id>', views.index),
     path('editor/<str:id>', views.index),
     path('404', views.index),

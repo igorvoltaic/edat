@@ -26,16 +26,13 @@
         </div>
 
         {# Django variables section #}
-        {% block _variables %}{% endblock %}
         {% include "visualizer/_variables.html" %}
 
         {# Vue routes section #}
-        {% block _routes %}{% endblock %}
         {% include "visualizer/_routes.html" %}
 
         <script src="{% static 'visualizer/app.js' %}" type="application/javascript"></script>
 
-        {% block templates %}{% endblock %}
         {% include "visualizer/_templates.html" %}
 
 

@@ -10,6 +10,9 @@
     .dropdown-default {
         margin: 0;
         padding: 0.5em;
+    }
+
+    .default-unset-color {
         color: rgb(225, 225, 225);
     }
 
@@ -43,7 +46,6 @@
         margin-left: 12.4em;
     }
 }
-
 
 .select-active {
     display: block !important;

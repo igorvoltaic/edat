@@ -6,7 +6,7 @@ export default {
         'dataset-editor-datarow': () => import(staticFiles + "vue/dataset-editor-datarow.js"),
         'dropdown-select': () => import(staticFiles + "vue/dropdown-select.js"),
     },
-    props: ['id'],
+    props: ['id', 'task_args', 'task_result'],
     data() {
         return {
             datasetInfo: {
@@ -35,7 +35,9 @@ export default {
             ],
             plotImgPath: null,
             isLoading: false,
-            error: null
+            isHidden: true,
+            error: null,
+            ws: null
         };
     },
     created: function () {
@@ -55,9 +57,13 @@ export default {
         .catch(ex => {
             console.log(ex.message);
         })
-
+        if (this.task_result) {
+            this.plotImgPath = `/${this.task_result}`
+            this.plotDto = this.task_args
+        }
+        this.startWebsocket();
+        // this.ws.send(JSON.stringify({action: 'status', task_id: 'hello'}));
     },
-
     methods: {
         sleep: function (ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
@@ -84,23 +90,49 @@ export default {
             }
             this.plotDto.columns = selectedColumns
         },
-        getRenderTask: function (path) {
-            const doAjax = async () => {
-                const response = await fetch(path, {
-                    method: 'GET',
-                });
-                const result = await response.json();
-                if (response.ok && result.result) {
-                    this.plotImgPath = `/${result.result}`
-                } else if (response.status == 400)  { 
-                    this.error = result.detail
-                    return Promise.reject(result.detail); 
-                } else if (response.status == 404)  { 
-                    this.error = 'Plot not found'
-                    return Promise.reject(result.detail); 
-                } 
-            }
-            doAjax().catch(console.log);       
+        getRenderTask: function (task_id) {
+            this.ws.send(JSON.stringify({action: 'status', task_id: task_id}));
+            // const doAjax = async () => {
+            //     const response = await fetch(path, {
+            //         method: 'GET',
+            //     });
+            //     const result = await response.json();
+            //     if (response.ok && result.result) {
+            //         this.plotImgPath = `/${result.result}`
+            //     } else if (response.status == 400)  { 
+            //         this.error = result.detail
+            //         return Promise.reject(result.detail); 
+            //     } else if (response.status == 404)  { 
+            //         this.error = 'Plot not found'
+            //         return Promise.reject(result.detail); 
+            //     } 
+            // }
+            // doAjax().catch(console.log);       
+        },
+        startWebsocket: function () {
+                this.ws = new WebSocket('ws://localhost:8765')
+                this.ws.onmessage = function (event) {
+                    data = JSON.parse(event.data);
+                    switch (data.type) {
+                        case 'status':
+                            if (data.result.result) {
+                                this.plotImgPath = `/${result.result}`
+                            }
+                            break;
+                        case 'error':
+                            this.error = data.detail
+                            console.log(data.detail)
+                            break;
+                        default:
+                            console.error("unsupported event", data);
+                    }
+                }
+
+                this.ws.onclose = function(){
+                // connection closed, discard old websocket and create a new one in 5s
+                    this.ws = null
+                    setTimeout(this.startWebsocket, 5000)
+               }
         },
         renderDataset: function () {
             this.error = null
@@ -108,6 +140,7 @@ export default {
             this.plotImgPath = null
             const path = '/api/render'
             let body = this.plotDto
+            let counter = 0
             const doAjax = async () => {
                 const response = await fetch(path, {
                     method: 'POST',
@@ -115,16 +148,21 @@ export default {
                 });
                 if (response.status == 202) {
                     const headers = await response.headers;
-                    const status_path = headers.get('Content-Location')
+                    const task_id = headers.get('Content-Location')
                     while (!this.plotImgPath) {
                         if (this.error) {
                             break
                         }
-                        this.getRenderTask(status_path)
+                        if (counter > 3) {
+                            this.isHidden = true
+                            this.isLoading = false
+                            break
+                        }
+                        this.getRenderTask(task_id)
                         await this.sleep(5000)
+                        counter++
                     }
                 } else if (response.status == 307) {
-                    const headers = await response.headers;
                     router.push({
                         name: 'login',
                     });

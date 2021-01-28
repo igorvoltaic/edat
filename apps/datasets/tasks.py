@@ -1,5 +1,5 @@
 """ Set of helper function to generate plots based on dataset data """
-from typing import Optional, Dict
+from typing import Dict
 
 from celery import shared_task
 
@@ -10,10 +10,11 @@ from helpers.exceptions import FileAccessError, PlotRenderError
 from helpers.plot_tools import render_plot
 
 
-@shared_task
+@shared_task(expires=60*5)
 def render_plot_task(plot_dict: Dict) -> str:
     """ Take task parameters and pass them to render_plot helper
         In case there was not plot created, delete the plot object
+        Taks expiration time is set in seconds.
     """
     plot_dto = PlotDTO(**plot_dict)
     plot = Plot.objects.get(pk=plot_dto.id)  # type: ignore

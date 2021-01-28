@@ -200,7 +200,8 @@ def draw_dataset_plot(
         if not task:
             raise HTTPException(status_code=404, detail="Dataset not found")
         if task.id:
-            response.headers["Content-Location"] = f"/api/render/{task.id}"
+            response.headers["Content-Location"] = task.id
+            # response.headers["Content-Location"] = f"/api/render/{task.id}"
             response.status_code = 202
         else:
             response.headers["Content-Location"] = f"/{task.result}"

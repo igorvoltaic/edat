@@ -52,4 +52,5 @@ kombu==5.0.2
 vine==5.0.0
 billiard==3.6.3.0
 click-repl==0.1.6
+websockets==8.1
 django-celery-results==2.0.1

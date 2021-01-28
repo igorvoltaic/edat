@@ -10,9 +10,7 @@ import seaborn as sns
 from django.conf import settings
 
 from apps.datasets.dtos import CsvDialectDTO, PlotDTO, CreatePlotDTO
-from apps.datasets.models import Plot
 
-from helpers.exceptions import FileAccessError, PlotRenderError
 from helpers.file_tools import get_plot_img_name
 
 
@@ -63,6 +61,7 @@ def render_plot(
             delimiter=dialect.delimiter,
             quotechar=dialect.quotechar,
             skiprows=dialect.start_row,
+            header=None if not dialect.has_header else [0]
         )
     else:
         data = pd.read_csv(csv_file)

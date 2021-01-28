@@ -1,6 +1,5 @@
 """ Dataset app service layer
 """
-import ast
 import json
 import logging
 import os
@@ -8,7 +7,6 @@ import shutil
 from typing import Optional
 
 from celery.result import AsyncResult
-from django_celery_results.models import TaskResult
 from django.core.paginator import Paginator
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -19,8 +17,8 @@ from pydantic import ValidationError
 from apps.datasets.dtos import ColumnType, CreateDatasetDTO, DatasetDTO, \
         DatasetInfoDTO, PageDTO, CsvDialectDTO, Delimiter, Quotechar, \
         CreatePlotDTO, PlotTaskDTO, PlotTaskStatusDTO, PlotTaskPageDTO, \
-        PlotDTO
-from apps.datasets.models import Dataset, Column, CsvDialect
+        PlotDTO, PlotParams
+from apps.datasets.models import Dataset, Column, CsvDialect, Plot
 from apps.datasets.tasks import render_plot_task
 from helpers.csv_tools import read_csv
 from helpers.exceptions import FileAccessError
@@ -281,51 +279,57 @@ def get_plot_img(plot_dto: CreatePlotDTO) -> Optional[PlotTaskDTO]:
     )
     plot_dto = PlotDTO(**plot_dto.dict(), id=plot.id)
     if not created:
-        if not os.path.isfile(plot.file.path):
+        if not os.path.isfile(plot.file.name):
             raise FileAccessError("Cannot find plot image file")
         return PlotTaskDTO(plot=plot_dto, result=plot.file.name)
     columns = dataset.columns.filter(name__in=plot_dto.columns)
     plot.columns.set(columns)
     task = render_plot_task.delay(plot_dto.dict())  # type: ignore
+    plot.task_id = task.task_id
+    plot.save()
     return PlotTaskDTO(id=task.task_id)
 
 
 def get_render_status(task_id: str) -> PlotTaskStatusDTO:
     task = AsyncResult(task_id)
-    if task.ready():
-        try:
-            return PlotTaskStatusDTO(
-                id=task_id,
-                result=task.get(),
-                ready=task.ready()
-            )
-        except (FileNotFoundError, FileExistsError, OSError) as err:
-            raise FileAccessError("Cannot find plot image file") from err
-    return PlotTaskStatusDTO(id=task_id, ready=task.ready())
+    try:
+        return PlotTaskStatusDTO(
+            id=task_id,
+            result=task.result,
+            ready=task.ready()
+        )
+    except (FileNotFoundError, FileExistsError, OSError) as err:
+        raise FileAccessError("Cannot find plot image file") from err
 
 
 def get_all_tasks(page_num: int = None, query: str = None) -> PlotTaskPageDTO:
     """ Get all datasets from the DB """
     if not query:
-        tasks = TaskResult.objects.order_by("-date_created")  # type: ignore
+        plots = Plot.objects.all()  # type: ignore
     else:
-        tasks = TaskResult.objects.filter(  # type: ignore
-                Q(plot_type__icontains=query) |
-                Q(status__icontains=query) |
-                Q(dataset__icontains=query) |
-                Q(file__icontains=query)
+        plots = Plot.objects.filter(  # type: ignore
+                Q(params__x__icontains=query) |
+                Q(params__y__icontains=query)
         )
-    paginator = Paginator(tasks, settings.ITEMS_PER_PAGE)
+    paginator = Paginator(plots, settings.ITEMS_PER_PAGE)
     if not page_num:
         page_num = 1
     page = paginator.get_page(page_num)
     page_data = PlotTaskPageDTO(
         tasks=[PlotTaskDTO(
-                id=t.task_id,
-                plot=PlotDTO(**ast.literal_eval(json.loads(t.task_args))[0]),
-                result=t.result.strip('"'),
-                status=t.status
-            ) for t in page.object_list],
+                id=p.task_id,
+                plot=PlotDTO(
+                    dataset_id=p.dataset_id,
+                    id=p.id,
+                    width=p.width,
+                    height=p.height,
+                    plot_type=p.plot_type,
+                    params=PlotParams(**json.loads(p.params)),
+                    columns=[c.name for c in p.columns.all()]
+                ),
+                result=p.file.name,
+                status=AsyncResult(p.task_id).status
+            ) for p in page.object_list],
         has_next=page.has_next(),
         has_prev=page.has_previous(),
         page_num=page.number,

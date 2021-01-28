@@ -22,7 +22,6 @@ export default {
             defaultText.innerHTML = item
             defaultText.value = item
             defaultText.style.color = '#444'
-            const old = input.value
             input.value = item
             this.$emit('input', item)
             menu.classList.remove('select-active');

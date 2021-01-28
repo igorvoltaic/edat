@@ -1,10 +1,5 @@
 {% load static %}
 
-{% block navigation %}
-
-
-{# Vue templates #}
-
 <script type="text/x-template" id="navbar-template">
     <div class="ui secondary pointing menu">
         <div id="site-header" class="header item">EDAT</div><div id="site-subheader" class="item">&nbsp;-&nbsp;&nbsp;Exploratory data analysis tool</div>
@@ -12,7 +7,7 @@
             <navbar-link 
                 class="item" :class="{active: isActive}" 
                 @click="isActive = !isActive" 
-                :key="link.title" 
+                :key="link.name" 
                 v-for="link in links" 
                 :link="link"
             ></navbar-link>
@@ -22,7 +17,5 @@
 </script>
 
 <script type="text/x-template" id="navbar-link-template">
-        <router-link v-if="link.name !== ('dataset' || 'editor')" :to="{ name: link.name }">[[ link.meta ]]</router-link>
+        <router-link v-if="link.meta.isVisible === true" :to="{ name: link.name }">[[ link.meta.displayName ]]</router-link>
 </script>
-
-{% endblock %}

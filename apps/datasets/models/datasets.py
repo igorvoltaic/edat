@@ -55,6 +55,7 @@ class Plot(models.Model):
         on_delete=models.CASCADE,
         related_name="plots"
     )
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
     plot_type = EnumChoiceField(PlotType)
     checksum = models.CharField(max_length=32)
     height = models.IntegerField()
@@ -62,11 +63,12 @@ class Plot(models.Model):
     columns = models.ManyToManyField('Column', db_index=True)
     params = models.JSONField()
     file = models.FileField(null=True)
+    task_id = models.CharField(max_length=255, unique=True, null=True)
 
     class Meta:
+        ordering = ['-timestamp']
         indexes = [
+            models.Index(fields=['-timestamp']),
             models.Index(fields=['checksum']),
-            models.Index(fields=['plot_type']),
-            models.Index(fields=['dataset']),
-            models.Index(fields=['file']),
+            models.Index(fields=['task_id']),
         ]

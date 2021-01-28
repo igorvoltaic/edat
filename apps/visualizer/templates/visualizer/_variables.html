@@ -1,9 +1,6 @@
 {% load static %}
 
-{% block _variables %}
-
 {# Variables used in Vue components #}
-
 <script type='text/javascript'> 
     const staticFiles = '{% static "visualizer/" %}'
     const csrf_token = "{{ csrf_token }}"
@@ -17,7 +14,4 @@
     const auth = false
 
     {% endif %}
-
 </script>
-
-{% endblock %}

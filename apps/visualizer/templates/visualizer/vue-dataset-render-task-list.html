@@ -1,0 +1,59 @@
+{% load static %}
+
+<script type="text/x-template" id="dataset-render-task-list-template">
+    <div id="home-container" class="ui container">
+        <div v-if="error" class="ui container red message">[[ error ]]</div>
+		<div id="dataset-table" class="ui container">
+            <h2>Task List</h2>
+            <form id="search-form" @submit.prevent="fetchTasks(1, true)" class="ui form">
+				<div class="field">
+					<div class="ui labeled input">
+						<div class="ui label">
+							Search
+						</div>
+						<input id="search" type="text" name="q" value="" placeholder="Input">
+					</div>
+				</div>
+			</form>
+			<table class="ui celled striped table">
+				<thead>
+					<tr>
+						<th class="center aligned">Task ID</th>
+						<th class="center aligned">Task Status</th>
+						<th class="center aligned">Task Result</th>
+						<th class="center aligned">Dataset ID</th>
+						<th class="center aligned">Columns</th>
+					</tr>
+				</thead>
+			    <tbody>
+					<dataset-render-task-list-item 
+						v-for="task in tasks" 
+                        :task="task"
+						:key="task.id">
+					</dataset-render-task-list-item>
+                    <tr v-if="tasks.length === 0">
+                        <td colspan="5">
+                            No datasets found
+                        </td>
+                    </tr>
+			  </tbody>
+			</table>
+            <div class="ui pagination menu">
+                <a v-for="num in numPages" @click="fetchTasks(num)" class="item" :class="{active: isActivePage(num)}">
+                    [[ num ]]
+                </a>
+            </div>
+		</div>
+    </div>
+</script>
+
+<script type="text/x-template" id="dataset-render-task-list-item-template">
+	<tr @click="openDataset" class="datasetListRow">
+		<td>[[ task.id.slice(0,8) ]]</td>
+		<td>[[ task.status ]]</td>
+		<td v-if='task.status !== "SUCCESS"'></td>
+		<td v-else>[[ task.result ]]</td>
+		<td>[[ task.plot.dataset_id ]]</td>
+		<td>[[ task.plot.columns.toString().replace(',', ', ') ]]</td>
+	</tr>
+</script>

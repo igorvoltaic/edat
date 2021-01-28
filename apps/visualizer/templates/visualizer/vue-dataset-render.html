@@ -1,6 +1,5 @@
 {% load static %}
 
-{% block dataset_render %}
 <script type="text/x-template" id="dataset-render-template">
     <div id="home-container" class="ui container">
         <div v-if="error" class="ui container red message">[[ error ]]</div>
@@ -10,19 +9,23 @@
                 <dropdown-select 
                  :items="datasetInfo.column_names"
                  :name="'y'"
+                 :selected="plotDto.params.y"
                  v-model="plotDto.params.y" @input="updateColumns">Y-axis
                 </dropdown-select>
                 <dropdown-select 
                  :items="datasetInfo.column_names"
                  :name="'x'"
+                 :selected="plotDto.params.x"
                  v-model="plotDto.params.x" @input="updateColumns">X-axis
                 </dropdown-select>
                 <dropdown-select 
                  :items="plot_types"
+                 :selected="plotDto.plot_type"
                  v-model="plotDto.plot_type">Plot type
                 </dropdown-select>
                 <dropdown-select 
                  :items="datasetInfo.column_names"
+                 :selected="plotDto.params.hue"
                  v-model="plotDto.params.hue">Hue
                 </dropdown-select>
                 <div id="height" class="ui labeled input">
@@ -75,6 +78,8 @@
 			  </tbody>
 			</table>
 		</div>
+        <div id="render-notification" class="" :class="{ hidden: isHidden }">
+            <h6>Render takes too long<br>Task was added to the queue</h6>
+        </div> 
     </div>
 </script>
-{% endblock %}

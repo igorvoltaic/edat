@@ -5,6 +5,14 @@
     display: none !important;
 }
 
+#render-notification {
+	background: lavender;
+	position: absolute;
+	top: 4em;
+	right: 2.5em;
+	padding: 1em;
+}
+
 
 #csv-config-menu {
     position: absolute;

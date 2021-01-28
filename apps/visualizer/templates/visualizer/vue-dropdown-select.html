@@ -1,6 +1,5 @@
 {% load static %}
 
-{% block dataset_select %}
 <script type="text/x-template" id="dropdown-select-template">
     <div>
         <label>
@@ -11,7 +10,7 @@
             <input v-else type="hidden" :name="name" value="">
             <i class="dropdown icon" @click="classToggle($event)"></i>
             <div v-if="isCreated && selected" class="dropdown-default" @click="classToggle($event)">[[ selected ]]</div>
-            <div v-else class="dropdown-default" @click="classToggle($event)">Select</div>
+            <div v-else class="dropdown-default default-unset-color" @click="classToggle($event)">Select</div>
             <div class="dropdown-menu"">
                 <div 
                  v-for="item in items" 
@@ -23,4 +22,3 @@
         </div>
     </div>
 </script>
-{% endblock %}

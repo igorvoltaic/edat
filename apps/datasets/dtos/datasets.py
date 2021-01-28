@@ -10,7 +10,7 @@ __all__ = [
     'ColumnType', 'CreateDatasetDTO', 'DatasetDTO', 'DatasetInfoDTO',
     'PageDTO', 'CsvDialectDTO', 'Delimiter', 'Quotechar', 'PlotType',
     'CreatePlotDTO', 'PlotDTO', 'PlotTaskDTO', 'PlotTaskStatusDTO',
-    'PlotTaskPageDTO'
+    'PlotTaskPageDTO', 'PlotParams'
 ]
 
 

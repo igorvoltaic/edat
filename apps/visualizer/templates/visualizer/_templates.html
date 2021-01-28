@@ -1,33 +1,18 @@
 {% load static %}
 
-{% block templates %}
-
-
 {# Vue templates #}
 
 {# Load only needed Vue templates based on auth #}
 {% if not user.is_authenticated %}
-    {% block login %}{% endblock %}
     {% include "visualizer/vue-login.html" %}
-    
-    {% block register %}{% endblock %}
     {% include "visualizer/vue-register.html" %}
 {% else %}
-    {% block home %}{% endblock %}
     {% include "visualizer/vue-dataset-list.html" %}
-
-    {% block dataset_editor %}{% endblock %}
     {% include "visualizer/vue-dataset-editor.html" %}
-    {% block dataset_render %}{% endblock %}
     {% include "visualizer/vue-dataset-render.html" %}
+    {% include "visualizer/vue-dataset-render-task-list.html" %}
 {% endif %}
 
-{% block navigation %}{% endblock %}
 {% include "visualizer/vue-navigation.html" %}
-{% block dropdown_select %}{% endblock %}
 {% include "visualizer/vue-dropdown-select.html" %}
-{% block 404page %}{% endblock %}
 {% include "visualizer/vue-custom-errors.html" %}
-
-
-{% endblock %}
