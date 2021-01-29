@@ -10,7 +10,11 @@ from helpers.exceptions import FileAccessError, PlotRenderError
 from helpers.plot_tools import render_plot
 
 
-@shared_task(expires=60*5)
+@shared_task(
+    # bind=True,
+    soft_time_limit=60*5,  # raises SoftTimeLimitExceeded in 5 min
+    time_limit=60*10,  # kill coroutine execution in 10 min
+)
 def render_plot_task(plot_dict: Dict) -> str:
     """ Take task parameters and pass them to render_plot helper
         In case there was not plot created, delete the plot object
