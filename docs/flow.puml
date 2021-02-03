@@ -3,6 +3,7 @@ actor User
 participant API
 database DB
 collections FS
+participant Celery
 |||
 User -> API: Uploads .csv file
 API -> FS: Save .csv file into temp directory
@@ -12,7 +13,7 @@ User -> API: Temp file ID
 API -> FS: Read temp file using standart csv_sniffer
 User -> API: CSV Dialect 
 API -> FS: Re-read temp file
-User -> API: Temp file ID and correct dataset headers
+User -> API: Temp file ID and correct dataset fieldtypes
 API -> FS: Re-read temp file
 API --> User: Return re-parsed header specification and temp ID
 ...
@@ -26,7 +27,8 @@ loop each column
     API -> DB: Create Column model
     DB --> API: Newly created model
     |||
-API -> FS: Copy source file to MEDIA directory
+end
+API -> FS: Copy source file to '/media' directory
 API -> FS: Remove temp directory
 API --> User: Return Dataset DTO
 ...
@@ -36,13 +38,34 @@ DB --> API: Dataset model
 API --> FS: Read dataset file
 API -> User: Dataset information, dialect and parsed dataset rows
 |||
-User -> API: Dataset ID, type of plot and parameters for Seaborn
-User -> API: Dataset ID
-API -> DB: Get Dataset model
-API -> DB: Get hash digest of the Plot DTO
-API --> FS: Read dataset file
-FS --> API: Path of rendered plot image
+User -> API: POST Plot parameters 
+API -> DB: Get Dataset object
+API -> DB: Get Plot object by its hash digest
+alt Plot hash found
+|||
 API -> User: Return 'Content-Location' header with the route to plot image
 |||
+else Plot hash not found
+API -> Celery: Assign 'render_plot' task
+Celery -> API: return Celery task ID
+API -> DB: Update Plot object with recieved Celery task ID
+API -> User: Return Celery task ID
+|||
 end
+...
+Celery --> FS: Read dataset file
+...
+Celery --> FS: save plot image
+Celery --> DB: rendered plot image path
+...
+User -> API: Plot render task ID
+API -> Celery: Check task state by ID
+alt task ready
+|||
+API -> User: Plot image path 
+else
+API -> User: Result not ready
+|||
+end
+|||
 @enduml

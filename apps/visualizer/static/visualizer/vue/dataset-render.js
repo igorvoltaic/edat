@@ -61,7 +61,7 @@ export default {
             this.plotImgPath = `/${this.task_result}`
             this.plotDto = this.task_args
         }
-        this.startWebsocket();
+        // this.startWebsocket();
         // this.ws.send(JSON.stringify({action: 'status', task_id: 'hello'}));
     },
     methods: {
@@ -91,48 +91,29 @@ export default {
             this.plotDto.columns = selectedColumns
         },
         getRenderTask: function (task_id) {
-            this.ws.send(JSON.stringify({action: 'status', task_id: task_id}));
-            // const doAjax = async () => {
-            //     const response = await fetch(path, {
-            //         method: 'GET',
-            //     });
-            //     const result = await response.json();
-            //     if (response.ok && result.result) {
-            //         this.plotImgPath = `/${result.result}`
-            //     } else if (response.status == 400)  { 
-            //         this.error = result.detail
-            //         return Promise.reject(result.detail); 
-            //     } else if (response.status == 404)  { 
-            //         this.error = 'Plot not found'
-            //         return Promise.reject(result.detail); 
-            //     } 
-            // }
-            // doAjax().catch(console.log);       
-        },
-        startWebsocket: function () {
-                this.ws = new WebSocket('ws://localhost:8765')
-                this.ws.onmessage = function (event) {
-                    data = JSON.parse(event.data);
-                    switch (data.type) {
-                        case 'status':
-                            if (data.result.result) {
-                                this.plotImgPath = `/${result.result}`
-                            }
-                            break;
-                        case 'error':
-                            this.error = data.detail
-                            console.log(data.detail)
-                            break;
-                        default:
-                            console.error("unsupported event", data);
-                    }
-                }
+            
+            //
+            // testing websocket implementation
+            //
+            // this.ws.send(JSON.stringify({action: 'status', task_id: task_id}));
 
-                this.ws.onclose = function(){
-                // connection closed, discard old websocket and create a new one in 5s
-                    this.ws = null
-                    setTimeout(this.startWebsocket, 5000)
-               }
+            const path = `/api/render/${task_id}`
+            const doAjax = async () => {
+                const response = await fetch(path, {
+                    method: 'GET',
+                });
+                const result = await response.json();
+                if (response.ok && result.result) {
+                    this.plotImgPath = `/${result.result}`
+                } else if (response.status == 400)  { 
+                    this.error = result.detail
+                    return Promise.reject(result.detail); 
+                } else if (response.status == 404)  { 
+                    this.error = 'Plot not found'
+                    return Promise.reject(result.detail); 
+                } 
+            }
+            doAjax().catch(console.log);       
         },
         renderDataset: function () {
             this.error = null
@@ -176,6 +157,34 @@ export default {
                 }
             }
             doAjax().catch(console.log);       
-        }
+        },
+
+        //
+        // WebSocket connection method 
+        // 
+        // startWebsocket: function () {
+        //         this.ws = new WebSocket('ws://localhost:8765')
+        //         this.ws.onmessage = function (event) {
+        //             data = JSON.parse(event.data);
+        //             switch (data.type) {
+        //                 case 'status':
+        //                     if (data.result.result) {
+        //                         this.plotImgPath = `/${result.result}`
+        //                     }
+        //                     break;
+        //                 case 'error':
+        //                     this.error = data.detail
+        //                     console.log(data.detail)
+        //                     break;
+        //                 default:
+        //                     console.error("unsupported event", data);
+        //             }
+        //         }
+        //         this.ws.onclose = function(){
+        //         // connection closed, discard old websocket and create a new one in 5s
+        //             this.ws = null
+        //             setTimeout(this.startWebsocket, 5000)
+        //        }
+        // },
     },
 }

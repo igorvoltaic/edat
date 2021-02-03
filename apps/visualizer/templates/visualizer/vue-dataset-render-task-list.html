@@ -18,10 +18,10 @@
 			<table class="ui celled striped table">
 				<thead>
 					<tr>
+						<th class="center aligned">Dataset ID</th>
 						<th class="center aligned">Task ID</th>
 						<th class="center aligned">Task Status</th>
 						<th class="center aligned">Task Result</th>
-						<th class="center aligned">Dataset ID</th>
 						<th class="center aligned">Columns</th>
 					</tr>
 				</thead>
@@ -49,11 +49,11 @@
 
 <script type="text/x-template" id="dataset-render-task-list-item-template">
 	<tr @click="openDataset" class="datasetListRow">
+		<td>[[ task.plot.dataset_id ]]</td>
 		<td>[[ task.id.slice(0,8) ]]</td>
 		<td>[[ task.status ]]</td>
 		<td v-if='task.status !== "SUCCESS"'></td>
 		<td v-else>[[ task.result ]]</td>
-		<td>[[ task.plot.dataset_id ]]</td>
 		<td>[[ task.plot.columns.toString().replace(',', ', ') ]]</td>
 	</tr>
 </script>

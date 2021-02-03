@@ -17,6 +17,7 @@ from apps.datasets.models import Plot
 from apps.datasets.dtos import PlotTaskStatusDTO
 from helpers.exceptions import FileAccessError, PlotRenderError
 
+
 logging.basicConfig()
 
 TASKS = set()
@@ -58,11 +59,11 @@ async def task_status(websocket, path):
                 )
             elif data["action"] == "all":
                 for task in await get_tasks():
-                    isReady = await result(task)
+                    isReady = await get_status(task)
                     await websocket.send(
                         json.dumps({
                             'type': 'all',
-                            'result': isReady
+                            'result': isReady.dict()
                         })
                     )
             elif data["action"] == "echo":

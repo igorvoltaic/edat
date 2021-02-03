@@ -4,7 +4,8 @@ import functools
 from django.conf import settings
 from django.contrib.sessions.models import Session
 from starlette.responses import RedirectResponse
-
+from django.core.exceptions import ObjectDoesNotExist
+from fastapi.responses import RedirectResponse
 
 def login_required(func):
     """Make sure user is logged in before proceeding"""
@@ -13,7 +14,7 @@ def login_required(func):
         request = kwargs['request']
         try:
             _ = Session.objects.get(pk=request.cookies.get('sessionid'))
-        except Session.DoesNotExist:  # type: ignore
+        except ObjectDoesNotExist:
             response = RedirectResponse(url=settings.LOGIN_URL)
             return response
         return func(*args, **kwargs)

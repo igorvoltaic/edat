@@ -46,28 +46,28 @@ def read_dataset(
     """
     try:
         dataset = Dataset.objects.get(pk=dataset_id)  # type: ignore
-        csv_dialect = dialect if dialect \
-            else CsvDialectDTO.from_orm(dataset.csv_dialect)
-        file_info = read_csv(dataset.name,
-                             dataset.file.name,
-                             csv_dialect=csv_dialect)
-        file_info.comment = dataset.comment
-        if not dialect:
-            # In case we changed the delimiter number of columns
-            # has changed as well and there is no point in reading
-            # column types from the DB
-            for index, _ in enumerate(zip(  # type: ignore
-                file_info.column_names,
-                file_info.column_types)
-            ):
-                column = Column.objects.get(  # type: ignore
-                        dataset_id=dataset_id,
-                        index=index
-                )
-                file_info.column_names[index] = column.name
-                file_info.column_types[index] = column.datatype
     except ObjectDoesNotExist:
         return None
+    csv_dialect = dialect if dialect \
+        else CsvDialectDTO.from_orm(dataset.csv_dialect)
+    file_info = read_csv(dataset.name,
+                         dataset.file.name,
+                         csv_dialect=csv_dialect)
+    file_info.comment = dataset.comment
+    if not dialect:
+        # In case we changed the delimiter number of columns
+        # has changed as well and there is no point in reading
+        # column types from the DB
+        for index, _ in enumerate(zip(  # type: ignore
+            file_info.column_names,
+            file_info.column_types)
+        ):
+            column = Column.objects.get(  # type: ignore
+                    dataset_id=dataset_id,
+                    index=index
+            )
+            file_info.column_names[index] = column.name
+            file_info.column_types[index] = column.datatype
     return DatasetDTO(
             **file_info.dict(),
             id=dataset.id,
@@ -248,7 +248,7 @@ def delete_dataset_entry(dataset_id: int) -> Optional[DatasetInfoDTO]:
 
 
 def delete_tmpfile(file_id: str) -> Optional[str]:
-    """ Delete tempfile """
+    """ Delete temporary file """
     tmp_file_dir = get_tmpfile_dirpath(file_id)
     if os.path.isdir(tmp_file_dir):
         shutil.rmtree(tmp_file_dir)
