@@ -35,7 +35,7 @@ python-multipart==0.0.5
 pytz==2020.4
 rfc3986==1.4.0
 scipy==1.5.4
-seaborn==0.11.0
+seaborn==0.11.1
 six==1.15.0
 sniffio==1.2.0
 sqlparse==0.4.1
