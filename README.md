@@ -134,7 +134,7 @@ Please check out [Docker documentation](https://docs.docker.com/get-docker/) for
 
 Before start generate `.env` file
 ```shell
-$ bash generate.sh
+$ bash create_env.sh
 ```
 
 for Development:
