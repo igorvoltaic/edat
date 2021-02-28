@@ -6,7 +6,13 @@ EDAT was created for intranet usage with a team of people in mind whose python
 knowledge level does not yet allow them to use common python libraries used for 
 such purposes these days. That's where EDAT steppes in, it provides users without 
 any programming experience ability to perform statistical data analysis through 
-the hi-level web interface.
+the hi-level web interface. 
+
+This project is much more complex than any of the previous projects covered in CS50 Web course. 
+It uses complex Architecture pattern, asyncronous task scheduling functionality, python static 
+type checking, containerization, separate API app, asyncronous tests implementation and 
+data-transfer objects for app tiers communications, and frontend VueJS app implemented from scratch.
+
 
 ### The normal workflow looks like this:
 
@@ -32,6 +38,8 @@ Please see [video demo](https://youtu.be/FUixs3kvxKI) for more details
 * [Vue.js](https://vuejs.org) - main frontend
 * [Celery](https://docs.celeryproject.org) - plot render task management
   * dockerized [RabbitMQ](https://www.rabbitmq.com) container for task queue
+* [Pydantic](https://pydantic-docs.helpmanual.io) - Controllers and Services communicate using pydantic
+DTO (data-transfer object) models which enforce data validation using type hints at runtime.
   
 ### Multi-Tier Architecture
 The Backend of this project uses the [3-Tier architecture pattern](https://en.wikipedia.org/wiki/Multitier_architecture#Three-tier_architecture)
@@ -44,8 +52,7 @@ minimal efforts.
 In this project these tiers are represented by:
 
 **Controllers**: A set of single-purpose functions triggered by user's request 
-to a certain api route and passing provided parameters to the logic tier using 
-DTO (data-transfer object) models.
+to a certain api route and passing provided parameters to the logic tier 
 
 **Services:**: The engine of the app which contains all the logic, decisions making, 
 processing and task scheduling.   
@@ -57,23 +64,42 @@ Django ORM
 ```
 .
 ├── apps/   <- Django app installations
-│   ├── datasets/   <- API implementation, main app
+│   ├── datasets/   <- API app
 │   │   ├── ...
-│   │   ├── controllers/  <- API controllers (Representation Tier)
-│   │   ├── dtos/         <- DTO models (pass data betweed controllers and services)
+│   │   ├── controllers/  <- Representation Tier: Controllers
+│   │   │   ├── ...
+│   │   │   └── datasets.py  <- API route functions
+│   │   ├── dtos/         
+│   │   │   ├── ...
+│   │   │   └── datasets.py  <- Pydantic DTO models 
 │   │   ├── migrations/
-│   │   ├── models/       <- Django ORM used by API (Data Tier)
-│   │   ├── services/     <- Application Logic (Logic Tier)
-│   │   ├── tasks.py      <- Celery tasks
+│   │   ├── models/       <- Data Tier: Database
+│   │   │   ├── ...
+│   │   │   └── datasets.py  <- Django ORM models except for User model (Data Tier)
+│   │   ├── services/     <- Logic Tier: Services
+│   │   │   ├── ...
+│   │   │   └── datasets.py  <- Application logic, decisions, task scheduling
+│   │   ├── tasks.py      <- Celery tasks for plot rendering
 │   │   └── ...
-│   └── visualizer/   <- Auth + Admin panel
+│   └── visualizer/   <- Frontend app, Auth, Admin panel
 │       ├── ...
 │       ├── migrations/
 │       ├── static/       <- VueJS app, CSS
-│       ├── templates/    <- Django + VueJS templates
-│       ├── models.py     <- Auth model
+│       │   └── visualizer/  
+│       │       ├── app.js   <- VueJS app initialization
+│       │       ├── vue  <- VueJS components
+│       │       └── css  <- Sass generated CSS
+│       ├── templates/   <- Django + VueJS templates
+│       │   └── visualizer/  
+│       │       ├── index.html   <- index page Django template which loads vue templates
+│       │       ├── _routes.html <- vue-router route decision 
+│       │       ├── _routes.html <- Django template which loads vue templates
+│       │       ├── _variables.html <- js variables passed using django template engine
+│       │       ├── vue-<component_name>.html  <- VueJS component templates
+│       │       └── css  <- Sass generated CSS
+│       ├── models.py    <- User model
 │       ├── tests.py
-│       ├── urls.py
+│       ├── urls.py       <- Urls for the project's frontend
 │       └── views.py      <- Login, Logout, Index views
 ├── base/
 │   ├── asgi.py       <- FastAPI install
@@ -94,13 +120,13 @@ Django ORM
 ├── Dockerfile      <- Docker build instructions
 ├── docker-compose.yml  <- App containerization instructions
 ├── ...
-├── media/    <- Uploaded files storage
+├── media/    <- Django MEDIA_ROOT directory
 ├── requirements.txt
 └── tests/
     ├── conftest.py   <- Tests conficuration
     ├── ...
-    ├── test_api/   <- Api tests 
-    └── test_models/    <- Model tests
+    ├── test_api/   <- Api test cases
+    └── test_models/    <- Models test cases
 ```
 
 ### Code Correctness
@@ -161,4 +187,4 @@ $ pytest
 
 ## Author
 
-Created entirely by [Igor Voltaic](https://github.com/igorvoltaic) in 2020-2021 for educational purposes
+Created from scratch by [Igor Voltaic](https://github.com/igorvoltaic) in 2020-2021 for educational purposes
