@@ -19,7 +19,7 @@ the hi-level web interface.
 * Save the file to the service
 * Open saved dataset and perform data analysis with selected options
 
-Please see [video demo](https://www.youtube.com/watch?v=uGnROs9hlXc) for more details
+Please see [video demo](https://youtu.be/FUixs3kvxKI) for more details
 
 ## Implementation details
 
