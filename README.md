@@ -165,14 +165,14 @@ $ bash create_env.sh
 
 Debug mode:
 ```shell
-~$ docker-compose up -d db rabbitmq
+$ docker-compose up -d db rabbitmq
 
-~$ celery -A base worker -l DEBUG
-~$ uvicorn base.asgi:app --debug
+$ celery -A base worker -l DEBUG
+$ uvicorn base.asgi:app --debug
 ```
 
 Normal:
-```sh
+```shell
 $ docker-compose up -d 
 ```
 Visit [http://localhost:8000]() to see the app
