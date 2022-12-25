@@ -163,15 +163,15 @@ Before start generate `.env` file
 $ bash create_env.sh
 ```
 
-for Development:
+Debug mode:
 ```shell
-$ docker-compose up -d db rabbitmq
-...
-$ celery -A base worker -l INFO
-$ uvicorn base.asgi:app --debug
+~$ docker-compose up -d db rabbitmq
+
+~$ celery -A base worker -l DEBUG
+~$ uvicorn base.asgi:app --debug
 ```
 
-for Production:
+Normal:
 ```sh
 $ docker-compose up -d 
 ```
